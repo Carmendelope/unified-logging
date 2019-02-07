@@ -1,6 +1,7 @@
-//
-// Copyright (C) 2019 Nalej - All Rights Reserved
-//
+/*
+ * Copyright (C) 2019 Nalej - All Rights Reserved
+ */
+
 // Wrapper for the configuration properties.
 
 package slave

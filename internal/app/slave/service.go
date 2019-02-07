@@ -1,11 +1,15 @@
-//
-// Copyright (C) 2019 Nalej - All Rights Reserved
-//
+/*
+ * Copyright (C) 2019 Nalej - All Rights Reserved
+ */
 
 package slave
 
 import (
 	"github.com/nalej/derrors"
+
+	// "github.com/nalej/unified-logging/pkg/provider/loggingstorage"
+	"github.com/nalej/unified-logging/internal/pkg/handler"
+	"github.com/nalej/unified-logging/internal/pkg/managers"
 
 	"github.com/nalej/grpc-utils/pkg/tools"
 	"github.com/nalej/grpc-unified-logging-go"
@@ -41,10 +45,12 @@ func (s *Service) Run() {
 	// Create managers and handler
         // searchManager := search.NewManager(elasticProvider)
         // expireManager := expire.NewManager(elasticProvider)
-	// handler := slave.NewHandler(searchManager, expireManager)
+	var searchManager managers.Search = nil
+	var expireManager managers.Expire = nil
+	handler := handler.NewHandler(searchManager, expireManager)
 
 	// Register handler
-	grpc_unified_logging_go.RegisterSlaveServer(s.Server.Server, nil)
+	grpc_unified_logging_go.RegisterSlaveServer(s.Server.Server, handler)
 
 	s.Server.Run()
 }

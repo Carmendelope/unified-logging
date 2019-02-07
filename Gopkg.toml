@@ -5,3 +5,19 @@
 [[constraint]]
     name="github.com/spf13/cobra"
     version="v0.0.3"
+
+[[constraint]]
+    name="github.com/nalej/derrors"
+    version="v2.0.0"
+
+[[constraint]]
+    name="github.com/nalej/grpc-utils"
+    version="v1.3.1"
+
+[[constraint]]
+    name = "github.com/nalej/grpc-common-go"
+    version="v0.0.30"
+
+[[constraint]]
+    name="github.com/nalej/grpc-unified-logging-go"
+    version="v0.0.1"
