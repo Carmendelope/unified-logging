@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Nalej - All Rights Reserved
+ * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
 // Handler for both slave and coord, implementing Search and Expire
@@ -14,6 +14,7 @@ import (
 	"github.com/nalej/unified-logging/internal/pkg/managers"
 	"github.com/nalej/grpc-common-go"
 	grpc "github.com/nalej/grpc-unified-logging-go"
+	"github.com/rs/zerolog/log"
 )
 
 type Handler struct {
@@ -31,21 +32,25 @@ func NewHandler(search managers.Search, expire managers.Expire) *Handler {
 // Search for log entries matching a query.
 func (h *Handler) Search(ctx context.Context, request *grpc.SearchRequest) (*grpc.LogResponse, error) {
 	// Validate request
-	// TBD
+	err := validateSearch(request)
+	if err != nil {
+		log.Info().Str("err", err.DebugReport()).Err(err).Msg("invalid request")
+		return nil, err
+	}
 
 	// Execute request on manager
-	// TBD
-
-	return nil, nil
+	return h.searchManager.Search(request)
 }
 
 // Expire the logs of a given application.
-func (h *Handler) Expire(ctx context.Context, requesst *grpc.ExpirationRequest) (*grpc_common_go.Success, error) {
+func (h *Handler) Expire(ctx context.Context, request *grpc.ExpirationRequest) (*grpc_common_go.Success, error) {
 	// Validate request
-	// TBD
+	err := validateExpire(request)
+	if err != nil {
+		log.Info().Str("err", err.DebugReport()).Err(err).Msg("invalid request")
+		return nil, err
+	}
 
 	// Execute request on manager
-	// TBD
-
-	return nil, nil
+	return h.expireManager.Expire(request)
 }
