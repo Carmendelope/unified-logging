@@ -10,9 +10,9 @@ import (
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
 
 	"github.com/nalej/unified-logging/internal/pkg/handler"
-	"github.com/nalej/unified-logging/internal/pkg/managers"
 
 	"github.com/nalej/unified-logging/internal/app/slave/search"
+	"github.com/nalej/unified-logging/internal/app/slave/expire"
 
 	"github.com/nalej/grpc-utils/pkg/tools"
 	"github.com/nalej/grpc-unified-logging-go"
@@ -47,8 +47,7 @@ func (s *Service) Run() {
 
 	// Create managers and handler
         searchManager := search.NewManager(elasticProvider)
-        // expireManager := expire.NewManager(elasticProvider)
-	var expireManager managers.Expire = nil
+        expireManager := expire.NewManager(elasticProvider)
 	handler := handler.NewHandler(searchManager, expireManager)
 
 	// Register handler
