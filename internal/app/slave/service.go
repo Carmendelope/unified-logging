@@ -8,8 +8,11 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
+
 	"github.com/nalej/unified-logging/internal/pkg/handler"
 	"github.com/nalej/unified-logging/internal/pkg/managers"
+
+	"github.com/nalej/unified-logging/internal/app/slave/search"
 
 	"github.com/nalej/grpc-utils/pkg/tools"
 	"github.com/nalej/grpc-unified-logging-go"
@@ -41,11 +44,10 @@ func NewService(conf *Config) (*Service, derrors.Error) {
 func (s *Service) Run() {
 	// Create ElasticSearch provider
 	elasticProvider := loggingstorage.NewElasticSearch(s.Configuration.ElasticAddress)
-	_ = elasticProvider
+
 	// Create managers and handler
-        // searchManager := search.NewManager(elasticProvider)
+        searchManager := search.NewManager(elasticProvider)
         // expireManager := expire.NewManager(elasticProvider)
-	var searchManager managers.Search = nil
 	var expireManager managers.Expire = nil
 	handler := handler.NewHandler(searchManager, expireManager)
 

@@ -24,6 +24,8 @@ func NewElasticSearch(address string) *ElasticSearch {
 func (es *ElasticSearch) Search(request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error) {
 	// Log
 
+	// Sort by timestamp
+
 	return nil, nil
 }
 
