@@ -12,6 +12,7 @@ import (
         "github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
+	"github.com/nalej/unified-logging/pkg/entities"
 
         grpc "github.com/nalej/grpc-unified-logging-go"
 	"github.com/nalej/grpc-common-go"
@@ -42,5 +43,5 @@ func (m *Manager) Expire(ctx context.Context, request *grpc.ExpirationRequest) (
                 return nil, err
         }
 
-        return *grpc_common_go.Success{}, nil
+        return &grpc_common_go.Success{}, nil
 }
