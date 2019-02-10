@@ -28,5 +28,19 @@ func NewManager(provider loggingstorage.Provider) *Manager {
 }
 
 func (m *Manager) Expire(ctx context.Context, request *grpc.ExpirationRequest) (*grpc_common_go.Success, derrors.Error) {
-	return nil, nil
+        // We have a verified request - translate to entities.SearchRequest and execute
+        filters := make(entities.SearchFilter)
+        // TODO: fill filters
+
+        search := &entities.SearchRequest{
+                Filters: filters,
+                IsUnionFilter: false,
+        }
+
+        err := m.Provider.Expire(ctx, search)
+        if err != nil {
+                return nil, err
+        }
+
+        return *grpc_common_go.Success{}, nil
 }
