@@ -5,6 +5,9 @@
 package slave
 
 import (
+	"fmt"
+	"net"
+
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
@@ -17,6 +20,8 @@ import (
 	"github.com/nalej/grpc-utils/pkg/tools"
 	"github.com/nalej/grpc-unified-logging-go"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"github.com/rs/zerolog/log"
 )
 
@@ -35,23 +40,35 @@ func NewService(conf *Config) (*Service, derrors.Error) {
 	conf.Print()
 
 	return &Service{
-		conf,
-		tools.NewGenericGRPCServer(uint32(conf.Port)),
+		Configuration: conf,
 	}, nil
 }
 
 // Run the service, launch the REST service handler.
-func (s *Service) Run() {
+func (s *Service) Run() derrors.Error {
 	// Create ElasticSearch provider
 	elasticProvider := loggingstorage.NewElasticSearch(s.Configuration.ElasticAddress)
+
+	// Start listening
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
+	if err != nil {
+		return derrors.NewUnavailableError("failed to listen", err)
+	}
 
 	// Create managers and handler
         searchManager := search.NewManager(elasticProvider)
         expireManager := expire.NewManager(elasticProvider)
 	handler := handler.NewHandler(searchManager, expireManager)
 
-	// Register handler
-	grpc_unified_logging_go.RegisterSlaveServer(s.Server.Server, handler)
+	// Create server and register handler
+	server := grpc.NewServer()
+	grpc_unified_logging_go.RegisterSlaveServer(server, handler)
 
-	s.Server.Run()
+	reflection.Register(server)
+	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
+	if err := server.Serve(lis); err != nil {
+		return derrors.NewUnavailableError("failed to serve", err)
+	}
+
+	return nil
 }

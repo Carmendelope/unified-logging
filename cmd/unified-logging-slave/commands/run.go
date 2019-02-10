@@ -38,5 +38,9 @@ func Run() {
 		panic(err.Error())
 	}
 
-	server.Run()
+	err = server.Run()
+	if err != nil {
+		log.Fatal().Str("err", err.DebugReport()).Err(err)
+		panic(err.Error())
+	}
 }
