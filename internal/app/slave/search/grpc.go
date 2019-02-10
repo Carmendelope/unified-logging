@@ -7,25 +7,29 @@
 package search
 
 import (
+	"time"
+
 	"github.com/nalej/unified-logging/pkg/entities"
 
         grpc "github.com/nalej/grpc-unified-logging-go"
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
-func UnixTime(ts *timestamp.Timestamp) int64 {
+func GoTime(ts *timestamp.Timestamp) time.Time {
 	if ts == nil {
-		return 0
+		var t time.Time // Uninitialized time is zero
+		return t
 	}
-	return ts.GetSeconds()
+	return time.Unix(ts.GetSeconds(), int64(ts.GetNanos()))
 }
 
-func GRPCTime(unix int64) *timestamp.Timestamp {
-	if unix == 0 {
+func GRPCTime(t time.Time) *timestamp.Timestamp {
+	if t.IsZero() {
 		return nil
 	}
 	return &timestamp.Timestamp{
-		Seconds: unix,
+		Seconds: t.Unix(),
+		Nanos: int32(t.Nanosecond()),
 	}
 }
 

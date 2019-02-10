@@ -5,6 +5,8 @@
 package managers
 
 import (
+	"context"
+
 	"github.com/nalej/derrors"
 
         grpc "github.com/nalej/grpc-unified-logging-go"
@@ -12,5 +14,5 @@ import (
 
 // Interface for Search Manager
 type Search interface {
-	Search(*grpc.SearchRequest) (*grpc.LogResponse, derrors.Error)
+	Search(context.Context, *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error)
 }

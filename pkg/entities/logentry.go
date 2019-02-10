@@ -6,9 +6,13 @@
 
 package entities
 
+import (
+	"time"
+)
+
 type LogEntries []*LogEntry
 
 type LogEntry struct {
-	Timestamp int64
-	Msg string
+	Timestamp time.Time `json:"@timestamp"`
+	Msg string `json:"message"`
 }

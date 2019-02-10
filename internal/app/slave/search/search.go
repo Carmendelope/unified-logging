@@ -7,6 +7,8 @@
 package search
 
 import (
+	"context"
+
         "github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/pkg/entities"
@@ -25,7 +27,7 @@ func NewManager(provider loggingstorage.Provider) *Manager {
 	}
 }
 
-func (m *Manager) Search(request *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error) {
+func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error) {
 	// We have a verified request - translate to entities.SearchRequest and execute
 	filters := make(entities.SearchFilter)
 	// TODO: fill filters
@@ -34,11 +36,11 @@ func (m *Manager) Search(request *grpc.SearchRequest) (*grpc.LogResponse, derror
 		Filters: filters,
 		IsUnionFilter: false,
 		MsgFilter: request.GetMsgQueryFilter(),
-		From: UnixTime(request.GetFrom()),
-		To: UnixTime(request.GetTo()),
+		From: GoTime(request.GetFrom()),
+		To: GoTime(request.GetTo()),
 	}
 
-	result, err := m.Provider.Search(search, 0 /* No limit */)
+	result, err := m.Provider.Search(ctx, search, 0 /* No limit */)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,13 @@ type Field string
 
 // Should we get these from deployment-manager/pkg/utils?
 const (
+        TimestampField = "@timestamp"
 	NamespaceField Field = "kubernetes.namespace"
 	AppInstanceIdField = "kubernetes.labels.nalej-instance"
 	ServiceGroupInstanceId = "kubernetes.labels.nalej-service"
+        MessageField = "message"
 )
+
+func (f Field) String() string {
+	return string(f)
+}

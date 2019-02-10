@@ -7,6 +7,8 @@
 package expire
 
 import (
+	"context"
+
         "github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
@@ -25,6 +27,6 @@ func NewManager(provider loggingstorage.Provider) *Manager {
 	}
 }
 
-func (m *Manager) Expire(*grpc.ExpirationRequest) (*grpc_common_go.Success, derrors.Error) {
+func (m *Manager) Expire(ctx context.Context, request *grpc.ExpirationRequest) (*grpc_common_go.Success, derrors.Error) {
 	return nil, nil
 }

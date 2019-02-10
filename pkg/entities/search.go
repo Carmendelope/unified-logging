@@ -6,7 +6,10 @@
 
 package entities
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // SearchFilter is a mapping of keys to arrays of values - these will be used
 // to match the logging metadata. If a log line matches a key to one or more
@@ -25,9 +28,9 @@ type SearchRequest struct {
 	// MsgFilter is a string that filters the log entries by message text. It allows wildcards.
 	MsgFilter string
 	// from is the beginning date in Unix time format.
-	From int64
+	From time.Time
 	// to is the ending date in Unix time format.
-	To int64
+	To time.Time
 }
 
 // IsValid check if the search request is well-formed.

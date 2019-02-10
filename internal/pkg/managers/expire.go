@@ -5,6 +5,8 @@
 package managers
 
 import (
+	"context"
+
         "github.com/nalej/derrors"
 
         grpc "github.com/nalej/grpc-unified-logging-go"
@@ -13,5 +15,5 @@ import (
 
 // Interface for Expire Manager
 type Expire interface {
-	Expire(*grpc.ExpirationRequest) (*grpc_common_go.Success, derrors.Error)
+	Expire(context.Context, *grpc.ExpirationRequest) (*grpc_common_go.Success, derrors.Error)
 }
