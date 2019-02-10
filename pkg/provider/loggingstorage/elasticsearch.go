@@ -9,7 +9,6 @@ package loggingstorage
 import (
 	"context"
 	"fmt"
-	"encoding/json"
 
 	"github.com/nalej/derrors"
 	"github.com/nalej/unified-logging/pkg/entities"
@@ -29,39 +28,24 @@ func NewElasticSearch(address string) *ElasticSearch {
 	}
 }
 
+func (es *ElasticSearch) Connect() (*elastic.Client, derrors.Error) {
+	// TODO: Create long-lived client if needed
+	client, err := elastic.NewSimpleClient(elastic.SetURL(fmt.Sprintf("http://%s", es.address)))
+	if err != nil {
+                return nil, derrors.NewUnavailableError("elastic search connection has failed", err)
+	}
+	return client, nil
+}
+
 func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error) {
 	log.Debug().Str("address", es.address).Msg("elastic search")
 
-        client, err := elastic.NewSimpleClient(
-                elastic.SetURL(fmt.Sprintf("http://%s", es.address)))
-        if err != nil {
-                return nil, derrors.NewUnavailableError("elastic search connection has failed", err)
+        client, derr := es.Connect()
+        if derr != nil {
+                return nil, derr
         }
 
-	// Determine if we need one or all filters to match
-        query := elastic.NewBoolQuery()
-        if request.IsUnionFilter {
-		// We need just a single match out of all filters
-                query = query.MinimumShouldMatch("1")
-        } else {
-		// We need all filters to match
-		query = query.MinimumShouldMatch("100%")
-	}
-
-	// Build filter query
-        for k, values := range request.Filters {
-		if len(values) == 0 {
-			continue
-		}
-
-		subQuery := elastic.NewBoolQuery()
-		for _, v := range values {
-			subQuery = subQuery.Should(elastic.NewTermQuery(k.String(), v))
-		}
-		subQuery = subQuery.MinimumNumberShouldMatch(1)
-
-		query = query.Should(subQuery)
-        }
+	query := createFilterQuery(request.Filters, request.IsUnionFilter)
 
 	// Add required filter for actual log line
         if request.MsgFilter != "" {
@@ -71,14 +55,7 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 
 	// Add time constraints
         if !request.From.IsZero() || !request.To.IsZero() {
-                subQuery := elastic.NewRangeQuery(entities.TimestampField)
-                if !request.From.IsZero() {
-                        subQuery = subQuery.From(request.From)
-                }
-                if !request.To.IsZero() {
-                        subQuery = subQuery.To(request.To)
-                }
-                query = query.Must(subQuery)
+                query = query.Must(createTimeQuery(request.From, request.To))
         }
 
 	// Execute
@@ -92,31 +69,35 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
         }
 
 	// Create result
-	_ = searchResult
-	return es.extractResult(searchResult)
+	return getLogEntries(searchResult)
 }
 
-func (es *ElasticSearch) extractResult(
-        searchResult *elastic.SearchResult) (entities.LogEntries, derrors.Error) {
-	num := searchResult.Hits.TotalHits
-	log.Debug().Int64("hits", num).Msg("matching log lines found")
+func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchRequest) derrors.Error {
+	log.Debug().Str("address", es.address).Msg("elastic expire")
 
-	result := make(entities.LogEntries, num)
+        client, derr := es.Connect()
+        if derr != nil {
+                return derr
+        }
 
-	for k, hit := range searchResult.Hits.Hits {
-		var entry entities.LogEntry
-		err := json.Unmarshal(*hit.Source, &entry)
-		if err != nil {
-			return nil, derrors.NewInternalError("elastic document deserialization error", err)
-		}
-		result[k] = &entry
-	}
+	query := createFilterQuery(request.Filters, request.IsUnionFilter)
 
-	return result, nil
-}
+	// TODO: Delete a specific time range
 
-func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchRequest, retention string) derrors.Error {
-	// Log
+	// Execute
+        res, err := client.DeleteByQuery().
+                Query(query).Index("_all").
+                Do(ctx)
+        if err != nil {
+                return derrors.NewInternalError("elastic expire query failed", err)
+        }
+        log.Debug().Int64("deleted", res.Deleted).Msg("expired entries")
+
+	// Flush deleted docs
+        _, err = elastic.NewIndicesFlushService(client).Do(ctx)
+        if err != nil {
+                return derrors.NewInternalError("elastic flush query failed", err)
+        }
 
 	return nil
 }

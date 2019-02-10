@@ -16,5 +16,5 @@ import (
 // Provider is the interface of the Logging provider.
 type Provider interface {
 	Search(ctx context.Context, request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error)
-	Expire(ctx context.Context, request *entities.SearchRequest, retention string) derrors.Error
+	Expire(ctx context.Context, request *entities.SearchRequest) derrors.Error
 }
