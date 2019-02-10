@@ -70,14 +70,6 @@
   version = "v0.0.1"
 
 [[projects]]
-  digest = "1:a55e0792c0a632d14fc0f7a1c4b55ed2973189c2267d7197c2e13b1a44371466"
-  name = "github.com/nalej/grpc-utils"
-  packages = ["pkg/tools"]
-  pruneopts = ""
-  revision = "3763d699ec598000c8095dc4d2e86a3ec0a169ff"
-  version = "v1.3.1"
-
-[[projects]]
   digest = "1:15904bf2ce6c7115ecea6ab1c33a40ac4fe7ca085973ed20fa9cd9d11b72484c"
   name = "github.com/olivere/elastic"
   packages = [
@@ -232,7 +224,6 @@
     "github.com/nalej/golang-template/version",
     "github.com/nalej/grpc-common-go",
     "github.com/nalej/grpc-unified-logging-go",
-    "github.com/nalej/grpc-utils/pkg/tools",
     "github.com/olivere/elastic",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",

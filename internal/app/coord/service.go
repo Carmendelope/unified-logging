@@ -2,7 +2,7 @@
  * Copyright (C) 2019 Nalej - All Rights Reserved
  */
 
-package slave
+package coord
 
 import (
 	"fmt"
@@ -10,12 +10,11 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
-
 	"github.com/nalej/unified-logging/internal/pkg/handler"
+	"github.com/nalej/unified-logging/internal/pkg/managers"
 
-	"github.com/nalej/unified-logging/internal/app/slave/search"
-	"github.com/nalej/unified-logging/internal/app/slave/expire"
+	// "github.com/nalej/unified-logging/internal/app/slave/search"
+	// "github.com/nalej/unified-logging/internal/app/slave/expire"
 
 	"github.com/nalej/grpc-unified-logging-go"
 
@@ -45,7 +44,7 @@ func NewService(conf *Config) (*Service, derrors.Error) {
 // Run the service, launch the REST service handler.
 func (s *Service) Run() derrors.Error {
 	// Create ElasticSearch provider
-	elasticProvider := loggingstorage.NewElasticSearch(s.Configuration.ElasticAddress)
+	// elasticProvider := loggingstorage.NewElasticSearch(s.Configuration.ElasticAddress)
 
 	// Start listening
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
@@ -54,13 +53,15 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create managers and handler
-        searchManager := search.NewManager(elasticProvider)
-        expireManager := expire.NewManager(elasticProvider)
+        // searchManager := search.NewManager(elasticProvider)
+        // expireManager := expire.NewManager(elasticProvider)
+	var searchManager managers.Search
+	var expireManager managers.Expire
 	handler := handler.NewHandler(searchManager, expireManager)
 
 	// Create server and register handler
 	server := grpc.NewServer()
-	grpc_unified_logging_go.RegisterSlaveServer(server, handler)
+	grpc_unified_logging_go.RegisterCoordinatorServer(server, handler)
 
 	reflection.Register(server)
 	log.Info().Int("port", s.Configuration.Port).Msg("Launching gRPC server")
