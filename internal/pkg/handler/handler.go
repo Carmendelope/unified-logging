@@ -39,7 +39,13 @@ func (h *Handler) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 	}
 
 	// Execute request on manager
-	return h.searchManager.Search(ctx, request)
+	res, err := h.searchManager.Search(ctx, request)
+	if err != nil {
+		log.Info().Str("err", err.DebugReport()).Err(err).Msg("error executing search")
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // Expire the logs of a given application.
@@ -52,5 +58,11 @@ func (h *Handler) Expire(ctx context.Context, request *grpc.ExpirationRequest) (
 	}
 
 	// Execute request on manager
-	return h.expireManager.Expire(ctx, request)
+	res, err := h.expireManager.Expire(ctx, request)
+	if err != nil {
+		log.Info().Str("err", err.DebugReport()).Err(err).Msg("error executing search")
+		return nil, err
+	}
+
+	return res, nil
 }

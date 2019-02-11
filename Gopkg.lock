@@ -38,6 +38,17 @@
   revision = "60711f1a8329503b04e1c88535f419d0bb440bff"
 
 [[projects]]
+  branch = "master"
+  digest = "1:ec2e7312d17f0c0dad774d94285f4c1a22bd25682e319ba61baf3d660a177057"
+  name = "github.com/nalej/deployment-manager"
+  packages = [
+    "pkg/common",
+    "pkg/utils",
+  ]
+  pruneopts = ""
+  revision = "6be0648bdf521a3b0142c9055c054dd6d300c731"
+
+[[projects]]
   digest = "1:0cc441f3dfe124dd74f44dd7e466dfc17cc7edff468094fbc3847a96b5ebf6f7"
   name = "github.com/nalej/derrors"
   packages = ["."]
@@ -220,6 +231,8 @@
   analyzer-version = 1
   input-imports = [
     "github.com/golang/protobuf/ptypes/timestamp",
+    "github.com/nalej/deployment-manager/pkg/common",
+    "github.com/nalej/deployment-manager/pkg/utils",
     "github.com/nalej/derrors",
     "github.com/nalej/golang-template/version",
     "github.com/nalej/grpc-common-go",

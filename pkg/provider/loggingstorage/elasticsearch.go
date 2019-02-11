@@ -58,6 +58,9 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
                 query = query.Must(createTimeQuery(request.From, request.To))
         }
 
+	// Output query string for debugging
+	queryDebug(query)
+
 	// Execute
         searchResult, err := client.Search().Index("_all").Query(query).
                 Sort(entities.TimestampField, false).
@@ -83,6 +86,9 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 	query := createFilterQuery(request.Filters, request.IsUnionFilter)
 
 	// TODO: Delete a specific time range
+
+	// Output query string for debugging
+	queryDebug(query)
 
 	// Execute
         res, err := client.DeleteByQuery().

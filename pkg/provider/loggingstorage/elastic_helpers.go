@@ -76,3 +76,16 @@ func createTimeQuery(from, to time.Time) elastic.Query {
 
 	return query
 }
+
+// Debug output for query string
+func queryDebug(query elastic.Query) {
+	if d := log.Debug(); d.Enabled() {
+		// Only get query text if we actually want debug logging
+		source, err := query.Source()
+		if err != nil {
+			d.Err(err).Msg("error getting query string")
+		} else {
+			d.Interface("query", source).Msg("executing search")
+		}
+	}
+}
