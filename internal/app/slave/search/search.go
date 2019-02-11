@@ -29,11 +29,14 @@ func NewManager(provider loggingstorage.Provider) *Manager {
 
 func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error) {
 	// We have a verified request - translate to entities.SearchRequest and execute
-	filters := make(entities.SearchFilter)
-	// TODO: fill filters
+	fields := entities.FilterFields{
+		OrganizationId: request.GetOrganizationId(),
+		AppInstanceId: request.GetAppInstanceId(),
+		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
+	}
 
 	search := &entities.SearchRequest{
-		Filters: filters,
+		Filters: fields.ToFilters(),
 		IsUnionFilter: false,
 		MsgFilter: request.GetMsgQueryFilter(),
 		From: GoTime(request.GetFrom()),
