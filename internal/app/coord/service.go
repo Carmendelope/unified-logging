@@ -11,12 +11,13 @@ import (
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/internal/pkg/handler"
-	"github.com/nalej/unified-logging/internal/pkg/managers"
+	"github.com/nalej/unified-logging/internal/pkg/client"
 
-	// "github.com/nalej/unified-logging/internal/app/slave/search"
-	// "github.com/nalej/unified-logging/internal/app/slave/expire"
+	"github.com/nalej/unified-logging/internal/app/coord/manager"
 
 	"github.com/nalej/grpc-unified-logging-go"
+        "github.com/nalej/grpc-application-go"
+        "github.com/nalej/grpc-infrastructure-go"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -43,8 +44,15 @@ func NewService(conf *Config) (*Service, derrors.Error) {
 
 // Run the service, launch the REST service handler.
 func (s *Service) Run() derrors.Error {
-	// Create ElasticSearch provider
-	// elasticProvider := loggingstorage.NewElasticSearch(s.Configuration.ElasticAddress)
+	// Create system model connection
+	smConn, err := grpc.Dial(s.Configuration.SystemModelAddress, grpc.WithInsecure())
+	if err != nil {
+		return derrors.NewUnavailableError("cannot create connection with the system model", err)
+	}
+
+	// Create clients
+	appsClient := grpc_application_go.NewApplicationsClient(smConn)
+	clustersClient := grpc_infrastructure_go.NewClustersClient(smConn)
 
 	// Start listening
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.Configuration.Port))
@@ -52,12 +60,12 @@ func (s *Service) Run() derrors.Error {
 		return derrors.NewUnavailableError("failed to listen", err)
 	}
 
+	// Executor for application cluster requests
+	executor := manager.NewLoggingExecutor(client.NewGRPCLoggingClient)
+
 	// Create managers and handler
-        // searchManager := search.NewManager(elasticProvider)
-        // expireManager := expire.NewManager(elasticProvider)
-	var searchManager managers.Search
-	var expireManager managers.Expire
-	handler := handler.NewHandler(searchManager, expireManager)
+        clientManager := manager.NewManager(appsClient, clustersClient, executor)
+	handler := handler.NewHandler(clientManager, clientManager)
 
 	// Create server and register handler
 	server := grpc.NewServer()
