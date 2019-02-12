@@ -36,7 +36,7 @@ func (le *LoggingExecutor) ExecRequests(ctx context.Context, hosts []string, f E
 		client, err := le.clientFactory(host)
 		if err != nil {
 			log.Warn().Str("host", host).Err(err).Msg("failed creating connection")
-			break
+			continue
 		}
 
 		count, err := f(ctx, client, i)
