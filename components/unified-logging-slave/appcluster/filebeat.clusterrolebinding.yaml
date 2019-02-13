@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: filebeat
+  labels:
+    cluster: application
+    component: unified-logging
+    service: filebeat
+subjects:
+- kind: ServiceAccount
+  name: filebeat
+  namespace: __NPH_NAMESPACE
+roleRef:
+  kind: ClusterRole
+  name: filebeat
+  apiGroup: rbac.authorization.k8s.io
