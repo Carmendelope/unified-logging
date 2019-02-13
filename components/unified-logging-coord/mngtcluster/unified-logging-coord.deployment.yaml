@@ -5,7 +5,7 @@ metadata:
     cluster: management
     component: unified-logging
     service: unified-logging-coord
-  name: unified-logging-slave
+  name: unified-logging-coord
   namespace: __NPH_NAMESPACE
 spec:
   replicas: 1
