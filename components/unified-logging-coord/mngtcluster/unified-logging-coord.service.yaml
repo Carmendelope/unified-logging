@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: unified-logging-coord
+  namespace: __NPH_NAMESPACE
+  labels:
+    cluster: management
+    component: unified-logging
+    service: unified-logging-coord
+spec:
+  selector:
+      cluster: management
+      component: unified-logging
+      service: unified-logging-coord
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8323
+    targetPort: 8323

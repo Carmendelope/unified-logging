@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elastic
+  namespace: __NPH_NAMESPACE
+  labels:
+    cluster: application
+    component: unified-logging
+    service: elastic
+data:
+  elasticsearch.yml: |-
+    path.data: /data
+    discovery.type: single-node
+    network.host: _site_
+    cluster.name: __NPH_NAMESPACE
