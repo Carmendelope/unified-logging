@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: unified-logging-slave
+  namespace: __NPH_NAMESPACE
+  labels:
+    cluster: application
+    component: unified-logging
+    service: unified-logging-slave
+spec:
+  selector:
+      cluster: application
+      component: unified-logging
+      service: unified-logging-slave
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8322
+    targetPort: 8322
