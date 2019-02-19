@@ -28,13 +28,18 @@ type Manager struct {
         ClustersClient grpc_infrastructure_go.ClustersClient
 
 	Executor *LoggingExecutor
+
+	appClusterPrefix string
+	appClusterPort int
 }
 
-func NewManager(apps grpc_application_go.ApplicationsClient, clusters grpc_infrastructure_go.ClustersClient, executor *LoggingExecutor) *Manager {
+func NewManager(apps grpc_application_go.ApplicationsClient, clusters grpc_infrastructure_go.ClustersClient, executor *LoggingExecutor, prefix string, port int) *Manager {
 	return &Manager{
 		ApplicationsClient: apps,
 		ClustersClient: clusters,
 		Executor: executor,
+		appClusterPrefix: prefix,
+		appClusterPort: port,
 	}
 }
 
@@ -50,10 +55,15 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 		return nil, derrors.NewInternalError("error getting cluster list", err)
 	}
 
+	prefix := m.appClusterPrefix
+	if prefix != "" {
+		prefix = prefix + "."
+	}
+
 	clusterList := clusters.GetClusters()
 	hosts := make([]string, len(clusterList))
 	for i, cluster := range(clusterList) {
-		hosts[i] = fmt.Sprintf("appcluster.%s:443", cluster.GetHostname())
+		hosts[i] = fmt.Sprintf("%s%s:%d", prefix, cluster.GetHostname(), m.appClusterPort)
 	}
 
 	return hosts, nil

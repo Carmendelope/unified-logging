@@ -61,10 +61,15 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Executor for application cluster requests
-	executor := manager.NewLoggingExecutor(client.NewGRPCLoggingClient)
+	params := &client.LoggingClientParams{
+		UseTLS: s.Configuration.UseTLS,
+		Insecure: s.Configuration.Insecure,
+		CACert: s.Configuration.CACert,
+	}
+	executor := manager.NewLoggingExecutor(client.NewGRPCLoggingClient, params)
 
 	// Create managers and handler
-        clientManager := manager.NewManager(appsClient, clustersClient, executor)
+        clientManager := manager.NewManager(appsClient, clustersClient, executor, s.Configuration.AppClusterPrefix, s.Configuration.AppClusterPort)
 	handler := handler.NewHandler(clientManager, clientManager)
 
 	// Create server and register handler

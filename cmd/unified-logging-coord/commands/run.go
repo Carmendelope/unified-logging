@@ -24,8 +24,12 @@ var runCmd = &cobra.Command{
 
 func init() {
 	runCmd.Flags().IntVar(&config.Port, "port", 8323, "Port for Unified Logging Coordinator gRPC API")
-	runCmd.PersistentFlags().StringVar(&config.SystemModelAddress, "systemModelAddress", "localhost:8800",
-		"System Model address (host:port)")
+	runCmd.PersistentFlags().StringVar(&config.SystemModelAddress, "systemModelAddress", "localhost:8800", "System Model address (host:port)")
+	runCmd.PersistentFlags().StringVar(&config.AppClusterPrefix, "appClusterPrefix", "appcluster", "Prefix for application cluster hostnames")
+	runCmd.PersistentFlags().IntVar(&config.AppClusterPort, "appClusterPort", 443, "Port used by app-cluster-api")
+	runCmd.PersistentFlags().BoolVar(&config.UseTLS, "useTLS", true, "Use TLS to connect to application cluster")
+	runCmd.PersistentFlags().BoolVar(&config.Insecure, "insecure", false, "Don't validate TLS certificates")
+	runCmd.PersistentFlags().StringVar(&config.CACert, "caCert", "", "Alternative certificate file to use for validation")
 	rootCmd.AddCommand(runCmd)
 }
 

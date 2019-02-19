@@ -15,4 +15,10 @@ type LoggingClient interface {
 	Close() error
 }
 
-type LoggingClientFactory func(address string) (LoggingClient, error)
+type LoggingClientParams struct {
+	UseTLS bool
+	Insecure bool
+	CACert string
+}
+
+type LoggingClientFactory func(address string, params *LoggingClientParams) (LoggingClient, error)

@@ -30,6 +30,8 @@ spec:
         args:
         - "run"
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
+        - "--caCert=/nalej/cert.pem"
+        - "--debug"
         ports:
         - name: api-port
           containerPort: 8323
