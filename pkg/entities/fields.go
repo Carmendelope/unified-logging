@@ -21,9 +21,9 @@ type Field string
 const (
         TimestampField = "@timestamp"
 	NamespaceField Field = "kubernetes.namespace"
-	OrganizationIdField = "kubernetes.labels." + "nalej-organization" // TODO
-	AppInstanceIdField = "kubernetes.labels." + utils.NALEJ_ANNOTATION_INSTANCE_ID
-	ServiceGroupInstanceIdField = "kubernetes.labels." + "nalej-service-group" //TODO
+	OrganizationIdField = "kubernetes.labels." + utils.NALEJ_ANNOTATION_ORGANIZATION
+	AppInstanceIdField = "kubernetes.labels." + utils.NALEJ_ANNOTATION_APP_INSTANCE_ID
+	ServiceGroupInstanceIdField = "kubernetes.labels." + utils.NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
         MessageField = "message"
 )
 
