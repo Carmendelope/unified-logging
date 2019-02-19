@@ -61,12 +61,17 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 	// Output query string for debugging
 	queryDebug(query)
 
+	// If no limit, we set to the default maximum window
+	// TODO: use scroll API and pagination to retrieve results
+	if limit < 0 {
+		limit = 10000
+	}
+
 	// Execute
         searchResult, err := client.Search().Index("_all").Query(query).
-                Sort(entities.TimestampField, false).
-                Size(limit).
-                Do(ctx)
-
+		Sort(entities.TimestampField, false).
+		Size(limit).
+		Do(ctx)
         if err != nil {
                 return nil, derrors.NewInternalError("elastic search query has failed", err)
         }

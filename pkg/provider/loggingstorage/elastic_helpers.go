@@ -20,9 +20,9 @@ import (
 
 func getLogEntries(searchResult *elastic.SearchResult) (entities.LogEntries, derrors.Error) {
 	num := searchResult.Hits.TotalHits
-	log.Debug().Int64("hits", num).Msg("matching log lines found")
+	log.Debug().Int64("hits", num).Int("hits_len", len(searchResult.Hits.Hits)).Msg("matching log lines found")
 
-	result := make(entities.LogEntries, num)
+	result := make(entities.LogEntries, len(searchResult.Hits.Hits))
 
 	for k, hit := range searchResult.Hits.Hits {
 		var entry entities.LogEntry

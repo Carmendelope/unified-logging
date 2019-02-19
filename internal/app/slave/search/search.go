@@ -43,7 +43,7 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 		To: GoTime(request.GetTo()),
 	}
 
-	result, err := m.Provider.Search(ctx, search, 0 /* No limit */)
+	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)
 	if err != nil {
 		return nil, err
 	}
