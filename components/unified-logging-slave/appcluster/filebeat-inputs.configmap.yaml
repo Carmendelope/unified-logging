@@ -15,3 +15,9 @@ data:
       processors:
         - add_kubernetes_metadata:
             in_cluster: true
+        - drop_event:
+            when:
+              not:
+                has_fields: ['kubernetes.labels.nalej-organization']
+        - include_fields:
+            fields: ['stream', 'message', 'kubernetes.namespace', 'kubernetes.labels']
