@@ -27,10 +27,16 @@ spec:
         imagePullPolicy: Always
         securityContext:
           runAsUser: 2000
+        env:
+          - name: ENVIRONMENT
+            valueFrom:
+              configMapKeyRef:
+                name: management-config
+                key: environment
         args:
         - "run"
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
-        - "--caCert=/nalej/cert.pem"
+        - "--caCert=/nalej/$(ENVIRONMENT).pem"
         - "--debug"
         ports:
         - name: api-port
