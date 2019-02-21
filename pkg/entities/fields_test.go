@@ -26,10 +26,10 @@ var _ = ginkgo.Describe("Fields", func() {
 			}
 			filter := fields.ToFilters()
 			gomega.Expect(filter).Should(gomega.BeEquivalentTo(SearchFilter{
-				"kubernetes.namespace": []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
-				"kubernetes.labels.nalej-organization": []string{OrganizationId},
-				"kubernetes.labels.nalej-app-instance-id": []string{AppInstanceId},
-				"kubernetes.labels.nalej-service-group-instance-id": []string{ServiceGroupInstanceId},
+				NamespaceField: []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
+				OrganizationIdField: []string{OrganizationId},
+				AppInstanceIdField: []string{AppInstanceId},
+				ServiceGroupInstanceIdField: []string{ServiceGroupInstanceId},
 			}))
 		})
 	})

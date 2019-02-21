@@ -19,12 +19,12 @@ type Field string
 
 // Should we get these from deployment-manager/pkg/utils?
 const (
-        TimestampField = "@timestamp"
+        TimestampField Field = "@timestamp"
 	NamespaceField Field = "kubernetes.namespace"
-	OrganizationIdField = "kubernetes.labels." + utils.NALEJ_ANNOTATION_ORGANIZATION
-	AppInstanceIdField = "kubernetes.labels." + utils.NALEJ_ANNOTATION_APP_INSTANCE_ID
-	ServiceGroupInstanceIdField = "kubernetes.labels." + utils.NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
-        MessageField = "message"
+	OrganizationIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_ORGANIZATION
+	AppInstanceIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_APP_INSTANCE_ID
+	ServiceGroupInstanceIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
+        MessageField Field = "message"
 )
 
 func (f Field) String() string {

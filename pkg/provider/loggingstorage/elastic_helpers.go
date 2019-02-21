@@ -66,7 +66,7 @@ func createFilterQuery(filters entities.SearchFilter, union bool) (*elastic.Bool
 }
 
 func createTimeQuery(from, to time.Time) elastic.Query {
-	query := elastic.NewRangeQuery(entities.TimestampField)
+	query := elastic.NewRangeQuery(entities.TimestampField.String())
 	if !from.IsZero() {
 		query = query.From(from)
 	}

@@ -66,15 +66,15 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 		badResult.Hits.Hits[1].Source = &emptyJson
 
 		filter = entities.SearchFilter{
-			"kubernetes.namespace": []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
-			"kubernetes.labels.nalej-organization": []string{OrganizationId},
-			"kubernetes.labels.nalej-app-instance-id": []string{AppInstanceId},
-			"kubernetes.labels.nalej-service-group-instance-id": []string{ServiceGroupInstanceId},
+			entities.NamespaceField: []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
+			entities.OrganizationIdField: []string{OrganizationId},
+			entities.AppInstanceIdField: []string{AppInstanceId},
+			entities.ServiceGroupInstanceIdField: []string{ServiceGroupInstanceId},
 		}
 		multifilter = entities.SearchFilter{
-			"kubernetes.namespace": []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
-			"kubernetes.labels.nalej-organization": []string{OrganizationId},
-			"kubernetes.labels.nalej-app-instance-id": []string{AppInstanceId, AppInstanceId2},
+			entities.NamespaceField: []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
+			entities.OrganizationIdField: []string{OrganizationId},
+			entities.AppInstanceIdField: []string{AppInstanceId, AppInstanceId2},
 		}
 
 		from = time.Unix(1550678785, 278000000).UTC()
@@ -108,16 +108,16 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 
 			expected, err := elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.namespace", fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]),
+					elastic.NewTermQuery(entities.NamespaceField.String(), fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-organization", OrganizationId),
+					elastic.NewTermQuery(entities.OrganizationIdField.String(), OrganizationId),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-app-instance-id", AppInstanceId),
+					elastic.NewTermQuery(entities.AppInstanceIdField.String(), AppInstanceId),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-service-group-instance-id", ServiceGroupInstanceId),
+					elastic.NewTermQuery(entities.ServiceGroupInstanceIdField.String(), ServiceGroupInstanceId),
 				),
 			).Source()
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -134,16 +134,16 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 
 			expected, err := elastic.NewBoolQuery().MinimumShouldMatch("100%").Should(
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.namespace", fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]),
+					elastic.NewTermQuery(entities.NamespaceField.String(), fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-organization", OrganizationId),
+					elastic.NewTermQuery(entities.OrganizationIdField.String(), OrganizationId),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-app-instance-id", AppInstanceId),
+					elastic.NewTermQuery(entities.AppInstanceIdField.String(), AppInstanceId),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-service-group-instance-id", ServiceGroupInstanceId),
+					elastic.NewTermQuery(entities.ServiceGroupInstanceIdField.String(), ServiceGroupInstanceId),
 				),
 			).Source()
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -160,14 +160,14 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 
 			expected, err := elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.namespace", fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]),
+					elastic.NewTermQuery(entities.NamespaceField.String(), fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-organization", OrganizationId),
+					elastic.NewTermQuery(entities.OrganizationIdField.String(), OrganizationId),
 				),
 				elastic.NewBoolQuery().MinimumNumberShouldMatch(1).Should(
-					elastic.NewTermQuery("kubernetes.labels.nalej-app-instance-id", AppInstanceId),
-					elastic.NewTermQuery("kubernetes.labels.nalej-app-instance-id", AppInstanceId2),
+					elastic.NewTermQuery(entities.AppInstanceIdField.String(), AppInstanceId),
+					elastic.NewTermQuery(entities.AppInstanceIdField.String(), AppInstanceId2),
 				),
 			).Source()
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -185,7 +185,7 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 			jsonQ, err := json.Marshal(q)
 			gomega.Expect(err).Should(gomega.Succeed())
 
-			expected, err := elastic.NewRangeQuery("@timestamp").From(from).Source()
+			expected, err := elastic.NewRangeQuery(entities.TimestampField.String()).From(from).Source()
 			gomega.Expect(err).Should(gomega.Succeed())
 			jsonE, err := json.Marshal(expected)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -199,7 +199,7 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 			jsonQ, err := json.Marshal(q)
 			gomega.Expect(err).Should(gomega.Succeed())
 
-			expected, err := elastic.NewRangeQuery("@timestamp").To(to).Source()
+			expected, err := elastic.NewRangeQuery(entities.TimestampField.String()).To(to).Source()
 			gomega.Expect(err).Should(gomega.Succeed())
 			jsonE, err := json.Marshal(expected)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -212,7 +212,7 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 			jsonQ, err := json.Marshal(q)
 			gomega.Expect(err).Should(gomega.Succeed())
 
-			expected, err := elastic.NewRangeQuery("@timestamp").From(from).To(to).Source()
+			expected, err := elastic.NewRangeQuery(entities.TimestampField.String()).From(from).To(to).Source()
 			gomega.Expect(err).Should(gomega.Succeed())
 			jsonE, err := json.Marshal(expected)
 			gomega.Expect(err).Should(gomega.Succeed())
