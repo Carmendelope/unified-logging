@@ -68,7 +68,7 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 	}
 
 	// Execute
-        searchResult, err := client.Search().Index("_all").Query(query).
+        searchResult, err := client.Search().Query(query).
 		Sort(entities.TimestampField.String(), false).
 		Size(limit).
 		Do(ctx)
