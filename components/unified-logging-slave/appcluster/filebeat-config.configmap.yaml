@@ -15,7 +15,6 @@ data:
         # Mounted `filebeat-inputs` configmap:
         path: ${path.config}/inputs.d/*.yml
       modules:
-        enabled: true
-        path: ${path.config}/modules.d/*.yml
+        enabled: false
     output.elasticsearch:
       hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
