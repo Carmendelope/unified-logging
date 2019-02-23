@@ -25,6 +25,8 @@ import (
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	"github.com/onsi/gomega/gstruct"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/rs/zerolog/log"
 
 	"google.golang.org/grpc"
@@ -106,6 +108,8 @@ var _ = ginkgo.Describe("Search", func() {
 
 	var client grpc_unified_logging_go.SlaveClient
 
+	var from, to, toEarly *timestamp.Timestamp
+
 	ginkgo.BeforeSuite(func() {
 		// Create Elastic IT provider
 		elasticProvider := loggingstorage.NewElasticSearch(elasticAddress)
@@ -143,7 +147,15 @@ var _ = ginkgo.Describe("Search", func() {
 
 		// Create client
 		client = grpc_unified_logging_go.NewSlaveClient(conn)
-		_ = client
+
+		// Time bounds
+		from, err = ptypes.TimestampProto(startTime.Add(time.Second * 30))
+		gomega.Expect(err).Should(gomega.Succeed())
+
+		to, err = ptypes.TimestampProto(startTime.Add(time.Second * 80))
+		gomega.Expect(err).Should(gomega.Succeed())
+
+		toEarly, err = ptypes.TimestampProto(time.Unix(946684800, 0).UTC()) // 1/1/2000
 	})
 
 	ginkgo.Context("Search", func() {
@@ -201,7 +213,6 @@ var _ = ginkgo.Describe("Search", func() {
 			}
 
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
-
 		})
 		ginkgo.It("should return an empty result when searching for non-existing application instance", func() {
 			req := &grpc_unified_logging_go.SearchRequest{
@@ -219,18 +230,111 @@ var _ = ginkgo.Describe("Search", func() {
 			}))
 
 			gomega.Expect(res.Entries).Should(gomega.BeEmpty())
-
 		})
 		ginkgo.It("should be able to retrieve logs from a certain point in time", func() {
+			req := &grpc_unified_logging_go.SearchRequest{
+				OrganizationId: "org-id-1",
+				AppInstanceId: "app-inst-id-2",
+				From: from,
+			}
+			res, err := client.Search(context.Background(), req)
+			gomega.Expect(err).Should(gomega.Succeed())
 
+			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+				"OrganizationId": gomega.Equal("org-id-1"),
+				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"From": utils.MatchTimestamp(from),
+				"To": gomega.BeNil(),
+			}))
+
+			msgs := make([]string, len(res.Entries))
+			for i, e := range(res.Entries) {
+				msgs[i] = e.Msg
+			}
+
+			expected := []string{}
+			lines := []int{23, 24, 25, 26, 27, 28, 29, 33, 34, 35, 36, 37, 38, 39}
+			for _, i := range(lines) {
+				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			}
+
+			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 		})
 		ginkgo.It("should be able to retrieve logs to a certain point in time", func() {
+			req := &grpc_unified_logging_go.SearchRequest{
+				OrganizationId: "org-id-1",
+				AppInstanceId: "app-inst-id-2",
+				To: to,
+			}
+			res, err := client.Search(context.Background(), req)
+			gomega.Expect(err).Should(gomega.Succeed())
 
+			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+				"OrganizationId": gomega.Equal("org-id-1"),
+				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"From": gomega.BeNil(),
+				"To": utils.MatchTimestamp(to),
+			}))
+
+			msgs := make([]string, len(res.Entries))
+			for i, e := range(res.Entries) {
+				msgs[i] = e.Msg
+			}
+
+			expected := []string{}
+			lines := []int{20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38}
+			for _, i := range(lines) {
+				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			}
+
+			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 		})
 		ginkgo.It("should be able to retrieve logs between two points in time", func() {
+			req := &grpc_unified_logging_go.SearchRequest{
+				OrganizationId: "org-id-1",
+				AppInstanceId: "app-inst-id-2",
+				From: from,
+				To: to,
+			}
+			res, err := client.Search(context.Background(), req)
+			gomega.Expect(err).Should(gomega.Succeed())
+
+			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+				"OrganizationId": gomega.Equal("org-id-1"),
+				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"From": utils.MatchTimestamp(from),
+				"To": utils.MatchTimestamp(to),
+			}))
+
+			msgs := make([]string, len(res.Entries))
+			for i, e := range(res.Entries) {
+				msgs[i] = e.Msg
+			}
+
+			expected := []string{}
+			lines := []int{23, 24, 25, 26, 27, 28, 33, 34, 35, 36, 37, 38}
+			for _, i := range(lines) {
+				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			}
+
+			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 
 		})
 		ginkgo.It("should return an empty results for points in time with no log entries", func() {
+			req := &grpc_unified_logging_go.SearchRequest{
+				OrganizationId: "org-id-1",
+				AppInstanceId: "app-inst-id-2",
+				To: toEarly,
+			}
+			res, err := client.Search(context.Background(), req)
+			gomega.Expect(err).Should(gomega.Succeed())
+
+			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+				"OrganizationId": gomega.Equal("org-id-1"),
+				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"To": utils.MatchTimestamp(toEarly),
+				"Entries": gomega.HaveLen(0),
+			}))
 
 		})
 		ginkgo.It("should be able to retrieve logs matching a certain message", func() {
@@ -247,9 +351,9 @@ var _ = ginkgo.Describe("Search", func() {
 				"AppInstanceId": gomega.Equal("app-inst-id-1"),
 				"From": gomega.BeNil(),
 				"To": gomega.BeNil(),
+				"Entries": gomega.HaveLen(1),
 			}))
 
-			gomega.Expect(res.Entries).Should(gomega.HaveLen(1))
 			gomega.Expect(res.Entries[0].Msg).Should(gomega.ContainSubstring("15"))
 		})
 	})
