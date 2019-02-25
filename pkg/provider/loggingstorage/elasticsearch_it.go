@@ -8,6 +8,7 @@ package loggingstorage
 
 import (
 	"context"
+	"fmt"
 	"time"
 
         "github.com/nalej/derrors"
@@ -55,6 +56,22 @@ const templateJSON = `
   }
 }
 `
+
+// OrganizationID -> ApplicationInstanceID -> ServiceGroupInstanceId
+var instances = map[string]map[string][]string{
+	"org-id-1": map[string][]string{
+		"app-inst-id-1": []string{
+			"sg-inst-id-1",
+			"sg-inst-id-2",
+		},
+		"app-inst-id-2": []string{
+			"sg-inst-id-3",
+			"sg-inst-id-4",
+		},
+	},
+}
+
+var startTime = time.Unix(1550789643, 0).UTC()
 
 const templateName = "integration_test"
 
@@ -148,4 +165,53 @@ func (es *ElasticSearchIT) Clear() derrors.Error {
 	}
 
 	return nil
+}
+
+func (es *ElasticSearchIT) AddTestData() derrors.Error {
+	// Add some data
+	for _, e := range(generateEntries()) {
+		err := es.Add(e)
+		if err != nil {
+			return err
+		}
+	}
+
+	return es.Flush()
+}
+
+
+// 10 lines for each org/app/sg combo, with 10 seconds between lines, starting at startTime
+func generateEntries() []*ElasticITEntry {
+	entries := make([]*ElasticITEntry, 0)
+
+	currentLine := 0
+
+	for org, apps := range(instances) {
+		for app, sgs := range(apps) {
+			for _, sg := range(sgs) {
+				t := startTime
+				for i := 0; i < 10; i++ {
+					entry := &ElasticITEntry{
+						Timestamp: t,
+						Stream: "stdout",
+						Message: fmt.Sprintf("Log line %d", currentLine),
+						Kubernetes: ElasticITEntryKubernetes{
+							Namespace: fmt.Sprintf("%s-%s", org, app), // Hope it's not longer than 64
+							Labels: ElasticITEntryKubernetesLabels{
+								OrganizationID: org,
+								AppInstanceID: app,
+								ServiceGroupInstanceID: sg,
+							},
+						},
+					}
+
+					entries = append(entries, entry)
+					t = t.Add(time.Second * 10)
+					currentLine++
+				}
+			}
+		}
+	}
+
+	return entries
 }

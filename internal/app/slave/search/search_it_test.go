@@ -33,58 +33,6 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-// OrganizationID -> ApplicationInstanceID -> ServiceGroupInstanceId
-var instances = map[string]map[string][]string{
-	"org-id-1": map[string][]string{
-		"app-inst-id-1": []string{
-			"sg-inst-id-1",
-			"sg-inst-id-2",
-		},
-		"app-inst-id-2": []string{
-			"sg-inst-id-3",
-			"sg-inst-id-4",
-		},
-	},
-}
-
-var startTime = time.Unix(1550789643, 0).UTC()
-
-// 10 lines for each org/app/sg combo, with 10 seconds between lines, starting at startTime
-func generateEntries() []*loggingstorage.ElasticITEntry {
-	entries := make([]*loggingstorage.ElasticITEntry, 0)
-
-	currentLine := 0
-
-	for org, apps := range(instances) {
-		for app, sgs := range(apps) {
-			for _, sg := range(sgs) {
-				t := startTime
-				for i := 0; i < 10; i++ {
-					entry := &loggingstorage.ElasticITEntry{
-						Timestamp: t,
-						Stream: "stdout",
-						Message: fmt.Sprintf("Log line %d", currentLine),
-						Kubernetes: loggingstorage.ElasticITEntryKubernetes{
-							Namespace: fmt.Sprintf("%s-%s", org, app), // Hope it's not longer than 64
-							Labels: loggingstorage.ElasticITEntryKubernetesLabels{
-								OrganizationID: org,
-								AppInstanceID: app,
-								ServiceGroupInstanceID: sg,
-							},
-						},
-					}
-
-					entries = append(entries, entry)
-					t = t.Add(time.Second * 10)
-					currentLine++
-				}
-			}
-		}
-	}
-
-	return entries
-}
-
 
 var _ = ginkgo.Describe("Search", func() {
 	defer ginkgo.GinkgoRecover()
@@ -124,11 +72,7 @@ var _ = ginkgo.Describe("Search", func() {
 		gomega.Expect(derr).Should(gomega.Succeed())
 
 		// Add some data
-		for _, e := range(generateEntries()) {
-			err := provider.Add(e)
-			gomega.Expect(err).Should(gomega.Succeed())
-		}
-		derr = provider.Flush()
+		derr = provider.AddTestData()
 		gomega.Expect(derr).Should(gomega.Succeed())
 
 		// Create listener and server
@@ -149,6 +93,7 @@ var _ = ginkgo.Describe("Search", func() {
 		client = grpc_unified_logging_go.NewSlaveClient(conn)
 
 		// Time bounds
+		startTime := time.Unix(1550789643, 0).UTC() // From loggingstorage.elasticsearch_it.go
 		from, err = ptypes.TimestampProto(startTime.Add(time.Second * 30))
 		gomega.Expect(err).Should(gomega.Succeed())
 
