@@ -35,8 +35,6 @@ import (
 
 
 var _ = ginkgo.Describe("Search", func() {
-	defer ginkgo.GinkgoRecover()
-
 	if !utils.RunIntegrationTests() {
 		log.Warn().Msg("Integration tests are skipped")
 		return
@@ -59,16 +57,15 @@ var _ = ginkgo.Describe("Search", func() {
 	var from, to, toEarly *timestamp.Timestamp
 
 	ginkgo.BeforeSuite(func() {
+		// Set prefix to be able to run tests concurrently
+		prefix := "search"
+
 		// Create Elastic IT provider
 		elasticProvider := loggingstorage.NewElasticSearch(elasticAddress)
-		provider = &loggingstorage.ElasticSearchIT{elasticProvider}
-
-		// Clear out existing indices
-		derr := provider.Clear()
-		gomega.Expect(derr).Should(gomega.Succeed())
+		provider = &loggingstorage.ElasticSearchIT{elasticProvider, prefix}
 
 		// Initialize template
-		derr = provider.InitTemplate()
+		derr := provider.InitTemplate()
 		gomega.Expect(derr).Should(gomega.Succeed())
 
 		// Add some data
@@ -105,16 +102,19 @@ var _ = ginkgo.Describe("Search", func() {
 
 	ginkgo.Context("Search", func() {
 		ginkgo.It("should be able to retrieve logs for an application instance", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-2")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-2",
+				OrganizationId: org,
+				AppInstanceId: app,
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"From": gomega.BeNil(),
 				"To": gomega.BeNil(),
 			}))
@@ -132,17 +132,21 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 		})
 		ginkgo.It("should be able to retrieve logs for a service group instance", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-1")
+			sg := provider.Prefix("sg-inst-id-2")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-1",
-				ServiceGroupInstanceId: "sg-inst-id-2",
+				OrganizationId: org,
+				AppInstanceId: app,
+				ServiceGroupInstanceId: sg,
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-1"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"From": gomega.BeNil(),
 				"To": gomega.BeNil(),
 			}))
@@ -160,16 +164,19 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 		})
 		ginkgo.It("should return an empty result when searching for non-existing application instance", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-foo")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-foo",
+				OrganizationId: org,
+				AppInstanceId: app,
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-foo"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"From": gomega.BeNil(),
 				"To": gomega.BeNil(),
 			}))
@@ -177,17 +184,20 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(res.Entries).Should(gomega.BeEmpty())
 		})
 		ginkgo.It("should be able to retrieve logs from a certain point in time", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-2")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-2",
+				OrganizationId: org,
+				AppInstanceId: app,
 				From: from,
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"From": utils.MatchTimestamp(from),
 				"To": gomega.BeNil(),
 			}))
@@ -206,17 +216,20 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 		})
 		ginkgo.It("should be able to retrieve logs to a certain point in time", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-2")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-2",
+				OrganizationId: org,
+				AppInstanceId: app,
 				To: to,
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"From": gomega.BeNil(),
 				"To": utils.MatchTimestamp(to),
 			}))
@@ -235,9 +248,12 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 		})
 		ginkgo.It("should be able to retrieve logs between two points in time", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-2")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-2",
+				OrganizationId: org,
+				AppInstanceId: app,
 				From: from,
 				To: to,
 			}
@@ -245,8 +261,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"From": utils.MatchTimestamp(from),
 				"To": utils.MatchTimestamp(to),
 			}))
@@ -266,34 +282,40 @@ var _ = ginkgo.Describe("Search", func() {
 
 		})
 		ginkgo.It("should return an empty results for points in time with no log entries", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-2")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-2",
+				OrganizationId: org,
+				AppInstanceId: app,
 				To: toEarly,
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-2"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"To": utils.MatchTimestamp(toEarly),
 				"Entries": gomega.HaveLen(0),
 			}))
 
 		})
 		ginkgo.It("should be able to retrieve logs matching a certain message", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-1")
+
 			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-1",
+				OrganizationId: org,
+				AppInstanceId: app,
 				MsgQueryFilter: "15",
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-				"OrganizationId": gomega.Equal("org-id-1"),
-				"AppInstanceId": gomega.Equal("app-inst-id-1"),
+				"OrganizationId": gomega.Equal(org),
+				"AppInstanceId": gomega.Equal(app),
 				"From": gomega.BeNil(),
 				"To": gomega.BeNil(),
 				"Entries": gomega.HaveLen(1),

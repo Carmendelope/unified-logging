@@ -23,8 +23,6 @@ import (
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	_ "github.com/golang/protobuf/ptypes"
-	_ "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/rs/zerolog/log"
 
 	"google.golang.org/grpc"
@@ -32,9 +30,7 @@ import (
 )
 
 
-var _ = ginkgo.Describe("Search", func() {
-	defer ginkgo.GinkgoRecover()
-
+var _ = ginkgo.Describe("Expire", func() {
 	if !utils.RunIntegrationTests() {
 		log.Warn().Msg("Integration tests are skipped")
 		return
@@ -55,16 +51,15 @@ var _ = ginkgo.Describe("Search", func() {
 	var client grpc_unified_logging_go.SlaveClient
 
 	ginkgo.BeforeSuite(func() {
+		// Set prefix to be able to run tests concurrently
+		prefix := "expire"
+
 		// Create Elastic IT provider
 		elasticProvider := loggingstorage.NewElasticSearch(elasticAddress)
-		provider = &loggingstorage.ElasticSearchIT{elasticProvider}
-
-		// Clear out existing indices
-		derr := provider.Clear()
-		gomega.Expect(derr).Should(gomega.Succeed())
+		provider = &loggingstorage.ElasticSearchIT{elasticProvider, prefix}
 
 		// Initialize template
-		derr = provider.InitTemplate()
+		derr := provider.InitTemplate()
 		gomega.Expect(derr).Should(gomega.Succeed())
 
 		// Add some data
@@ -72,8 +67,13 @@ var _ = ginkgo.Describe("Search", func() {
 		gomega.Expect(derr).Should(gomega.Succeed())
 
 		// Also check we actually have data to be sure we expire data
-		req := &entities.SearchRequest{}
-		gomega.Expect(provider.Search(context.Background(), req, -1)).Should(gomega.HaveLen(40))
+		filters := &entities.FilterFields{
+			OrganizationId: provider.Prefix("org-id-1"),
+		}
+		sreq := &entities.SearchRequest{
+			Filters: filters.ToFilters(),
+		}
+		gomega.Expect(provider.Search(context.Background(), sreq, -1)).Should(gomega.HaveLen(40))
 
 		// Create listener and server
 		listener = test.GetDefaultListener()
@@ -96,20 +96,25 @@ var _ = ginkgo.Describe("Search", func() {
 	ginkgo.Context("Expire", func() {
 		ginkgo.It("should not remove anything when expiration of non-existent application instance is requested", func() {
 			req := &grpc_unified_logging_go.ExpirationRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-foo",
+				OrganizationId: provider.Prefix("org-id-1"),
+				AppInstanceId: provider.Prefix("app-inst-id-foo"),
 			}
 			_, err := client.Expire(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
 
 			// Check we still have all data
-			sreq := &entities.SearchRequest{}
+			filters := &entities.FilterFields{
+				OrganizationId: provider.Prefix("org-id-1"),
+			}
+			sreq := &entities.SearchRequest{
+				Filters: filters.ToFilters(),
+			}
 			gomega.Expect(provider.Search(context.Background(), sreq, -1)).Should(gomega.HaveLen(40))
 		})
 		ginkgo.It("should be able to remove all entries for an application instance", func() {
 			req := &grpc_unified_logging_go.ExpirationRequest{
-				OrganizationId: "org-id-1",
-				AppInstanceId: "app-inst-id-1",
+				OrganizationId: provider.Prefix("org-id-1"),
+				AppInstanceId: provider.Prefix("app-inst-id-1"),
 			}
 
 			_, err := client.Expire(context.Background(), req)
@@ -126,8 +131,12 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(provider.Search(context.Background(), sreq, -1)).Should(gomega.HaveLen(0))
 
 			// Check we have the other data still
-			// Check we have expired data
-			sreq = &entities.SearchRequest{}
+			filters = &entities.FilterFields{
+				OrganizationId: provider.Prefix("org-id-1"),
+			}
+			sreq = &entities.SearchRequest{
+				Filters: filters.ToFilters(),
+			}
 			gomega.Expect(provider.Search(context.Background(), sreq, -1)).Should(gomega.HaveLen(20))
 		})
 	})

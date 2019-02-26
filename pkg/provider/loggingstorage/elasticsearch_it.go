@@ -17,7 +17,7 @@ import (
 const templateJSON = `
 {
   "index_patterns": [
-    "*"
+    "%s_*"
   ],
   "mappings": {
     "doc": {
@@ -95,6 +95,13 @@ type ElasticITEntryKubernetesLabels struct {
 
 type ElasticSearchIT struct {
 	*ElasticSearch
+
+	// Prefix everything with this such that we can run test concurrently
+	PrefixStr string
+}
+
+func (es *ElasticSearchIT) Prefix(s string) string {
+	return fmt.Sprintf("%s_%s", es.PrefixStr, s)
 }
 
 func (es *ElasticSearchIT) InitTemplate() derrors.Error {
@@ -103,7 +110,8 @@ func (es *ElasticSearchIT) InitTemplate() derrors.Error {
 		return derr
 	}
 
-	_, err := client.IndexPutTemplate(templateName).BodyString(templateJSON).Do(context.Background())
+	template := fmt.Sprintf(templateJSON, es.PrefixStr)
+	_, err := client.IndexPutTemplate(es.Prefix(templateName)).BodyString(template).Do(context.Background())
 	if err != nil {
 		return derrors.NewInternalError("failed adding template", err)
 	}
@@ -118,7 +126,7 @@ func (es *ElasticSearchIT) Add(entry *ElasticITEntry) derrors.Error {
 		return derr
 	}
 
-	_, err := client.Index().Index(entry.Kubernetes.Namespace).Type("doc").
+	_, err := client.Index().Index(es.Prefix(entry.Kubernetes.Namespace)).Type("doc").
 		BodyJson(entry).Do(context.Background())
 	if err != nil {
 		return derrors.NewInternalError("failed adding entry", err)
@@ -147,12 +155,12 @@ func (es *ElasticSearchIT) Clear() derrors.Error {
 		return derr
 	}
 
-	_, err := client.DeleteIndex("_all").Do(context.Background())
+	_, err := client.DeleteIndex(es.Prefix("*")).Do(context.Background())
 	if err != nil {
 		return derrors.NewInternalError("failed deleting indices", err)
 	}
 
-	templates, err := client.IndexGetTemplate().Do(context.Background())
+	templates, err := client.IndexGetTemplate(es.Prefix("*")).Do(context.Background())
 	if err != nil {
 		return derrors.NewInternalError("failed listing templates", err)
 	}
@@ -169,7 +177,7 @@ func (es *ElasticSearchIT) Clear() derrors.Error {
 
 func (es *ElasticSearchIT) AddTestData() derrors.Error {
 	// Add some data
-	for _, e := range(generateEntries()) {
+	for _, e := range(es.generateEntries()) {
 		err := es.Add(e)
 		if err != nil {
 			return err
@@ -181,7 +189,7 @@ func (es *ElasticSearchIT) AddTestData() derrors.Error {
 
 
 // 10 lines for each org/app/sg combo, with 10 seconds between lines, starting at startTime
-func generateEntries() []*ElasticITEntry {
+func (es *ElasticSearchIT) generateEntries() []*ElasticITEntry {
 	entries := make([]*ElasticITEntry, 0)
 
 	currentLine := 0
@@ -196,11 +204,11 @@ func generateEntries() []*ElasticITEntry {
 						Stream: "stdout",
 						Message: fmt.Sprintf("Log line %d", currentLine),
 						Kubernetes: ElasticITEntryKubernetes{
-							Namespace: fmt.Sprintf("%s-%s", org, app), // Hope it's not longer than 64
+							Namespace: fmt.Sprintf("%s-%s", es.Prefix(org), es.Prefix(app)), // Hope it's not longer than 64
 							Labels: ElasticITEntryKubernetesLabels{
-								OrganizationID: org,
-								AppInstanceID: app,
-								ServiceGroupInstanceID: sg,
+								OrganizationID: es.Prefix(org),
+								AppInstanceID: es.Prefix(app),
+								ServiceGroupInstanceID: es.Prefix(sg),
 							},
 						},
 					}
