@@ -125,8 +125,9 @@ var _ = ginkgo.Describe("Search", func() {
 			}
 
 			expected := []string{}
-			for i := 20; i <= 39; i++ {
-				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			for i := 0; i < 10; i++ {
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-3 %d", i))
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-4 %d", i))
 			}
 
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
@@ -157,8 +158,8 @@ var _ = ginkgo.Describe("Search", func() {
 			}
 
 			expected := []string{}
-			for i := 10; i <= 19; i++ {
-				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			for i := 0; i < 10; i++ {
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-1 sg-inst-id-2 %d", i))
 			}
 
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
@@ -208,9 +209,9 @@ var _ = ginkgo.Describe("Search", func() {
 			}
 
 			expected := []string{}
-			lines := []int{23, 24, 25, 26, 27, 28, 29, 33, 34, 35, 36, 37, 38, 39}
-			for _, i := range(lines) {
-				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			for i := 3; i < 10; i++ {
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-3 %d", i))
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-4 %d", i))
 			}
 
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
@@ -240,9 +241,9 @@ var _ = ginkgo.Describe("Search", func() {
 			}
 
 			expected := []string{}
-			lines := []int{20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38}
-			for _, i := range(lines) {
-				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			for i := 0; i <= 8; i++ {
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-3 %d", i))
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-4 %d", i))
 			}
 
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
@@ -273,9 +274,9 @@ var _ = ginkgo.Describe("Search", func() {
 			}
 
 			expected := []string{}
-			lines := []int{23, 24, 25, 26, 27, 28, 33, 34, 35, 36, 37, 38}
-			for _, i := range(lines) {
-				expected = append(expected, fmt.Sprintf("Log line %d", i))
+			for i := 3; i <= 8; i++ {
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-3 %d", i))
+				expected = append(expected, fmt.Sprintf("Log line org-id-1 app-inst-id-2 sg-inst-id-4 %d", i))
 			}
 
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
@@ -308,7 +309,7 @@ var _ = ginkgo.Describe("Search", func() {
 			req := &grpc_unified_logging_go.SearchRequest{
 				OrganizationId: org,
 				AppInstanceId: app,
-				MsgQueryFilter: "15",
+				MsgQueryFilter: " 5",
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -318,10 +319,10 @@ var _ = ginkgo.Describe("Search", func() {
 				"AppInstanceId": gomega.Equal(app),
 				"From": gomega.BeNil(),
 				"To": gomega.BeNil(),
-				"Entries": gomega.HaveLen(1),
+				"Entries": gomega.HaveLen(2),
 			}))
 
-			gomega.Expect(res.Entries[0].Msg).Should(gomega.ContainSubstring("15"))
+			gomega.Expect(res.Entries[0].Msg).Should(gomega.ContainSubstring(" 5"))
 		})
 	})
 

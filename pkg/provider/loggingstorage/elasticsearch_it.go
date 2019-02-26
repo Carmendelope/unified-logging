@@ -141,7 +141,7 @@ func (es *ElasticSearchIT) Flush() derrors.Error {
 		return derr
 	}
 
-	_, err := client.Flush().Do(context.Background())
+	_, err := client.Flush(es.Prefix("*")).Do(context.Background())
 	if err != nil {
 		return derrors.NewInternalError("failed flushing", err)
 	}
@@ -192,8 +192,6 @@ func (es *ElasticSearchIT) AddTestData() derrors.Error {
 func (es *ElasticSearchIT) generateEntries() []*ElasticITEntry {
 	entries := make([]*ElasticITEntry, 0)
 
-	currentLine := 0
-
 	for org, apps := range(instances) {
 		for app, sgs := range(apps) {
 			for _, sg := range(sgs) {
@@ -202,7 +200,7 @@ func (es *ElasticSearchIT) generateEntries() []*ElasticITEntry {
 					entry := &ElasticITEntry{
 						Timestamp: t,
 						Stream: "stdout",
-						Message: fmt.Sprintf("Log line %d", currentLine),
+						Message: fmt.Sprintf("Log line %s %s %s %d", org, app, sg, i),
 						Kubernetes: ElasticITEntryKubernetes{
 							Namespace: fmt.Sprintf("%s-%s", es.Prefix(org), es.Prefix(app)), // Hope it's not longer than 64
 							Labels: ElasticITEntryKubernetesLabels{
@@ -215,7 +213,6 @@ func (es *ElasticSearchIT) generateEntries() []*ElasticITEntry {
 
 					entries = append(entries, entry)
 					t = t.Add(time.Second * 10)
-					currentLine++
 				}
 			}
 		}
