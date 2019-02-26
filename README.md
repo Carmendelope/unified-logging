@@ -11,6 +11,8 @@ The following table contains the variables that activate the integration tests
  | RUN_INTEGRATION_TEST  | true | Run integration tests |
  | IT_ELASTIC_ADDRESS  | localhost:9200 | ElasticSearch Address |
 
+To run Elastic: `docker run --rm -it -p 9200:9200 docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0 elasticsearch`
+
 ## Guidelines
 
 This repository follows the project structure recommended by the [golang community] (https://github.com/golang-standards/project-layout).
