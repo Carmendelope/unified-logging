@@ -12,6 +12,8 @@ import (
 	"time"
 
         "github.com/nalej/derrors"
+
+	"github.com/olivere/elastic"
 )
 
 const templateJSON = `
@@ -120,30 +122,20 @@ func (es *ElasticSearchIT) InitTemplate() derrors.Error {
 
 }
 
-func (es *ElasticSearchIT) Add(entry *ElasticITEntry) derrors.Error {
+func (es *ElasticSearchIT) Add(entries []*ElasticITEntry) derrors.Error {
 	client, derr := es.Connect()
 	if derr != nil {
 		return derr
 	}
 
-	_, err := client.Index().Index(es.Prefix(entry.Kubernetes.Namespace)).Type("doc").
-		BodyJson(entry).Do(context.Background())
+	toAdd := client.Bulk().Index(es.Prefix(entries[0].Kubernetes.Namespace)).Type("doc")
+	for _, entry := range(entries) {
+		toAdd = toAdd.Add(elastic.NewBulkIndexRequest().Doc(entry))
+	}
+
+	_, err := toAdd.Refresh("wait_for").Do(context.Background())
 	if err != nil {
 		return derrors.NewInternalError("failed adding entry", err)
-	}
-
-	return nil
-}
-
-func (es *ElasticSearchIT) Flush() derrors.Error {
-	client, derr := es.Connect()
-	if derr != nil {
-		return derr
-	}
-
-	_, err := client.Flush(es.Prefix("*")).Do(context.Background())
-	if err != nil {
-		return derrors.NewInternalError("failed flushing", err)
 	}
 
 	return nil
@@ -184,16 +176,17 @@ func (es *ElasticSearchIT) AddTestData() derrors.Error {
 		}
 	}
 
-	return es.Flush()
+	return nil
 }
 
 
 // 10 lines for each org/app/sg combo, with 10 seconds between lines, starting at startTime
-func (es *ElasticSearchIT) generateEntries() []*ElasticITEntry {
-	entries := make([]*ElasticITEntry, 0)
+func (es *ElasticSearchIT) generateEntries() [][]*ElasticITEntry {
+	entriesList := make([][]*ElasticITEntry, 0)
 
 	for org, apps := range(instances) {
 		for app, sgs := range(apps) {
+			entries := make([]*ElasticITEntry, 0)
 			for _, sg := range(sgs) {
 				t := startTime
 				for i := 0; i < 10; i++ {
@@ -215,8 +208,9 @@ func (es *ElasticSearchIT) generateEntries() []*ElasticITEntry {
 					t = t.Add(time.Second * 10)
 				}
 			}
+			entriesList = append(entriesList, entries)
 		}
 	}
 
-	return entries
+	return entriesList
 }
