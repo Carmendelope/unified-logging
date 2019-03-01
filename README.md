@@ -1,6 +1,17 @@
-# golang-template
+# Unified logging
 
-This repository contains a basic template for new Nalej golang-based projects. 
+README TBD, see NP-883
+
+## Integration tests
+
+The following table contains the variables that activate the integration tests
+
+ | Variable  | Example Value | Description |
+ | ------------- | ------------- |------------- |
+ | RUN_INTEGRATION_TEST  | true | Run integration tests |
+ | IT_ELASTIC_ADDRESS  | localhost:9200 | ElasticSearch Address |
+
+To run Elastic: `docker run --rm -it -p 9200:9200 docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0 elasticsearch`
 
 ## Guidelines
 

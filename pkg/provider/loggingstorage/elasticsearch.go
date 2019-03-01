@@ -50,7 +50,7 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 	// Add required filter for actual log line
         if request.MsgFilter != "" {
                 query = query.Must(elastic.NewQueryStringQuery(request.MsgFilter).
-                        DefaultField(entities.MessageField).AllowLeadingWildcard(true))
+                        DefaultField(entities.MessageField.String()).AllowLeadingWildcard(true))
         }
 
 	// Add time constraints
@@ -68,8 +68,8 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 	}
 
 	// Execute
-        searchResult, err := client.Search().Index("_all").Query(query).
-		Sort(entities.TimestampField, false).
+        searchResult, err := client.Search().Query(query).
+		Sort(entities.TimestampField.String(), false).
 		Size(limit).
 		Do(ctx)
         if err != nil {

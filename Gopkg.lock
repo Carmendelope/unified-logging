@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:83890fd48ed56f688cad2abcb39b3efe969094a7d97d8ddc77d749d3ba3a23e9"
+  name = "github.com/Benjamintf1/unmarshalledmatchers"
+  packages = ["."]
+  pruneopts = ""
+  revision = "f49d1795d752929500b8ed2289f1e21f10414667"
+  version = "1.0.0"
+
+[[projects]]
   digest = "1:3dd078fda7500c341bc26cfbc6c6a34614f295a2457149fc1045cab767cbcf18"
   name = "github.com/golang/protobuf"
   packages = [
@@ -391,6 +399,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Benjamintf1/unmarshalledmatchers",
     "github.com/golang/protobuf/ptypes",
     "github.com/golang/protobuf/ptypes/timestamp",
     "github.com/nalej/deployment-manager/pkg/common",
