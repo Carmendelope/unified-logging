@@ -12,6 +12,7 @@ import (
 
         "github.com/nalej/derrors"
 
+	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
 
@@ -40,8 +41,8 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 		Filters: fields.ToFilters(),
 		IsUnionFilter: false,
 		MsgFilter: request.GetMsgQueryFilter(),
-		From: GoTime(request.GetFrom()),
-		To: GoTime(request.GetTo()),
+		From: utils.GoTime(request.GetFrom()),
+		To: utils.GoTime(request.GetTo()),
 		Order: entities.SortOrder(request.GetOrder()),
 	}
 
@@ -69,8 +70,8 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 	response := &grpc.LogResponse{
 		OrganizationId: request.GetOrganizationId(),
 		AppInstanceId: request.GetAppInstanceId(),
-		From: GRPCTime(from),
-		To: GRPCTime(to),
+		From: utils.GRPCTime(from),
+		To: utils.GRPCTime(to),
 		Entries: GRPCEntries(result),
 	}
 	return response, nil
