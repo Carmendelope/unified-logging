@@ -9,12 +9,11 @@ import (
 	"time"
 
 	"github.com/nalej/unified-logging/internal/pkg/managers"
+	"github.com/nalej/unified-logging/internal/pkg/utils"
 
 	"github.com/nalej/grpc-unified-logging-go"
         "github.com/nalej/grpc-common-go"
 
-        "github.com/golang/protobuf/ptypes"
-        "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/nalej/grpc-utils/pkg/test"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -31,12 +30,8 @@ const (
 )
 
 var (
-	From = func() *timestamp.Timestamp {
-		t, _ := ptypes.TimestampProto(time.Unix(0, 0))
-		return t
-	}()
-
-	To = ptypes.TimestampNow()
+	From = utils.GRPCTime(time.Unix(0, 0))
+	To = utils.GRPCTime(time.Now())
 )
 
 var ValidSearchRequest = &grpc_unified_logging_go.SearchRequest{
