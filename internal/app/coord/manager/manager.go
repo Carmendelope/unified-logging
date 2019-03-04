@@ -98,13 +98,24 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		return nil, err
 	}
 
+	var from, to *timestamp.Timestamp
+	var entries []*grpc_unified_logging_go.LogEntry
+	if len(out) > 0 {
+		entries = MergeAndSort(request.GetOrder(), out, total)
+		from = entries[0].Timestamp
+		to = entries[len(entries)-1].Timestamp
+
+		// Swap for descending order
+		// TODO
+	}
+
         // Create GRPC response
         response := &grpc_unified_logging_go.LogResponse{
                 OrganizationId: request.GetOrganizationId(),
                 AppInstanceId: request.GetAppInstanceId(),
-                From: request.GetFrom(),
-                To: request.GetTo(),
-                Entries: MergeAndSort(request.GetOrder(), out, total),
+                From: from,
+                To: to,
+                Entries: entries,
         }
 
 	return response, nil
