@@ -42,6 +42,7 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 		MsgFilter: request.GetMsgQueryFilter(),
 		From: GoTime(request.GetFrom()),
 		To: GoTime(request.GetTo()),
+		Order: entities.SortOrder(request.GetOrder()),
 	}
 
 	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)

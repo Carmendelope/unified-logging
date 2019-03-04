@@ -17,6 +17,21 @@ import (
 // all keys should match, or at least one key should match
 type SearchFilter map[Field][]string
 
+// SortOrder defines the ordering of the search result based on timestamp
+// Defaults to ascending (oldest first)
+type SortOrder int
+const (
+	Ascending SortOrder = 0
+	Descending SortOrder = 1
+)
+
+func (s SortOrder) ToAscending() bool {
+	if s == Ascending {
+		return true
+	}
+	return false
+}
+
 // SearchRequest is the structure that is used to describe the search query for the logging storage provider
 type SearchRequest struct {
 	// Filters is a map with all the fields that you want to include, the filter is a exact filter.
@@ -31,6 +46,9 @@ type SearchRequest struct {
 	From time.Time
 	// to is the ending date in Unix time format.
 	To time.Time
+	// Order specifies the timestamp sort ordering
+	// Defaults to ascending
+	Order SortOrder
 }
 
 // IsValid check if the search request is well-formed.
