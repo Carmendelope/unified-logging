@@ -11,8 +11,11 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/golang/protobuf/ptypes/timestamp"
+
         "github.com/nalej/derrors"
 
+        "github.com/nalej/unified-logging/internal/pkg/utils"
         "github.com/nalej/unified-logging/pkg/entities"
 
         "github.com/nalej/grpc-unified-logging-go"
@@ -106,7 +109,11 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		to = entries[len(entries)-1].Timestamp
 
 		// Swap for descending order
-		// TODO
+		if utils.GRPCTimeAfter(from, to) {
+			tmp := from
+			from = to
+			to = tmp
+		}
 	}
 
         // Create GRPC response

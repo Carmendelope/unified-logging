@@ -37,3 +37,7 @@ func GRPCTime(t time.Time) *timestamp.Timestamp {
 		Nanos: int32(t.Nanosecond()),
 	}
 }
+
+func GRPCTimeAfter(ts1, ts2 *timestamp.Timestamp) bool {
+	return GoTime(ts1).After(GoTime(ts2))
+}
