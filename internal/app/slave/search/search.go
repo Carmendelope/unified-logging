@@ -8,9 +8,11 @@ package search
 
 import (
 	"context"
+	"time"
 
         "github.com/nalej/derrors"
 
+	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
 
@@ -39,8 +41,8 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 		Filters: fields.ToFilters(),
 		IsUnionFilter: false,
 		MsgFilter: request.GetMsgQueryFilter(),
-		From: GoTime(request.GetFrom()),
-		To: GoTime(request.GetTo()),
+		From: utils.GoTime(request.GetFrom()),
+		To: utils.GoTime(request.GetTo()),
 		Order: entities.SortOrder(request.GetOrder()),
 	}
 
@@ -49,12 +51,27 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 		return nil, err
 	}
 
+	// Assuming the entries are sorted, we can get the timestamp of
+	// the first and last entry to get the whole range
+	var from, to time.Time
+	if len(result) > 0 {
+		from = result[0].Timestamp
+		to = result[len(result)-1].Timestamp
+
+		// Make from/to determination independent of sort order
+		if from.After(to) {
+			tmp := from
+			from = to
+			to = tmp
+		}
+	}
+
 	// Create GRPC response
 	response := &grpc.LogResponse{
 		OrganizationId: request.GetOrganizationId(),
 		AppInstanceId: request.GetAppInstanceId(),
-		From: request.GetFrom(),
-		To: request.GetTo(),
+		From: utils.GRPCTime(from),
+		To: utils.GRPCTime(to),
 		Entries: GRPCEntries(result),
 	}
 	return response, nil
