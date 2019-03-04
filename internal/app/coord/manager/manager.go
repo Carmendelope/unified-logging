@@ -104,7 +104,7 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
                 AppInstanceId: request.GetAppInstanceId(),
                 From: request.GetFrom(),
                 To: request.GetTo(),
-                Entries: MergeAndSort(out, total),
+                Entries: MergeAndSort(request.GetOrder(), out, total),
         }
 
 	return response, nil
@@ -136,7 +136,7 @@ func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.E
         return &grpc_common_go.Success{}, nil
 }
 
-func MergeAndSort(in [][]*grpc_unified_logging_go.LogEntry, total int) []*grpc_unified_logging_go.LogEntry {
+func MergeAndSort(order grpc_unified_logging_go.SortOrder, in [][]*grpc_unified_logging_go.LogEntry, total int) []*grpc_unified_logging_go.LogEntry {
 	// Merge requests
 	result := make([]*grpc_unified_logging_go.LogEntry, total)
 	var count int = 0
@@ -147,9 +147,14 @@ func MergeAndSort(in [][]*grpc_unified_logging_go.LogEntry, total int) []*grpc_u
 		count += copy(result[count:], slice)
 	}
 
-	// Sort in descending order (so less function is opposite)
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].Timestamp.GetSeconds() > result[j].Timestamp.GetSeconds()
+		// Sort in ascending order
+		if order == grpc_unified_logging_go.SortOrder_ASC {
+			return result[i].Timestamp.GetSeconds() < result[j].Timestamp.GetSeconds()
+		// Sort in descending order
+		} else {
+			return result[i].Timestamp.GetSeconds() > result[j].Timestamp.GetSeconds()
+		}
 	})
 
 	return result
