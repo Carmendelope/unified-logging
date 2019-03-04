@@ -324,6 +324,48 @@ var _ = ginkgo.Describe("Search", func() {
 
 			gomega.Expect(res.Entries[0].Msg).Should(gomega.ContainSubstring(" 5"))
 		})
+		ginkgo.It("should be able to retrieve logs in ascending order", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-1")
+
+			req := &grpc_unified_logging_go.SearchRequest{
+				OrganizationId: org,
+				AppInstanceId: app,
+				Order: grpc_unified_logging_go.SortOrder_ASC,
+			}
+			res, err := client.Search(context.Background(), req)
+			gomega.Expect(err).Should(gomega.Succeed())
+
+			for i := 1; i < len(res.Entries); i++ {
+				first, err := ptypes.Timestamp(res.Entries[i-1].Timestamp)
+				gomega.Expect(err).Should(gomega.Succeed())
+				second, err := ptypes.Timestamp(res.Entries[i].Timestamp)
+				gomega.Expect(err).Should(gomega.Succeed())
+
+				gomega.Expect(second).Should(gomega.BeTemporally(">=", first))
+			}
+		})
+		ginkgo.It("should be able to retrieve logs in descending order", func() {
+			org := provider.Prefix("org-id-1")
+			app := provider.Prefix("app-inst-id-1")
+
+			req := &grpc_unified_logging_go.SearchRequest{
+				OrganizationId: org,
+				AppInstanceId: app,
+				Order: grpc_unified_logging_go.SortOrder_DESC,
+			}
+			res, err := client.Search(context.Background(), req)
+			gomega.Expect(err).Should(gomega.Succeed())
+
+			for i := 1; i < len(res.Entries); i++ {
+				first, err := ptypes.Timestamp(res.Entries[i-1].Timestamp)
+				gomega.Expect(err).Should(gomega.Succeed())
+				second, err := ptypes.Timestamp(res.Entries[i].Timestamp)
+				gomega.Expect(err).Should(gomega.Succeed())
+
+				gomega.Expect(second).Should(gomega.BeTemporally("<=", first))
+			}
+		})
 	})
 
 	ginkgo.AfterSuite(func() {
