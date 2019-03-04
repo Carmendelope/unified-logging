@@ -54,7 +54,7 @@ var _ = ginkgo.Describe("Search", func() {
 
 	var client grpc_unified_logging_go.SlaveClient
 
-	var from, to, toEarly *timestamp.Timestamp
+	var from, to, start, end, toEarly *timestamp.Timestamp
 
 	ginkgo.BeforeSuite(func() {
 		// Set prefix to be able to run tests concurrently
@@ -93,8 +93,12 @@ var _ = ginkgo.Describe("Search", func() {
 		startTime := time.Unix(1550789643, 0).UTC() // From loggingstorage.elasticsearch_it.go
 		from, err = ptypes.TimestampProto(startTime.Add(time.Second * 30))
 		gomega.Expect(err).Should(gomega.Succeed())
+		start, err = ptypes.TimestampProto(startTime)
+		gomega.Expect(err).Should(gomega.Succeed())
 
 		to, err = ptypes.TimestampProto(startTime.Add(time.Second * 80))
+		gomega.Expect(err).Should(gomega.Succeed())
+		end, err = ptypes.TimestampProto(startTime.Add(time.Second * 90))
 		gomega.Expect(err).Should(gomega.Succeed())
 
 		toEarly, err = ptypes.TimestampProto(time.Unix(946684800, 0).UTC()) // 1/1/2000
@@ -115,8 +119,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId": gomega.Equal(app),
-				"From": gomega.BeNil(),
-				"To": gomega.BeNil(),
+				"From": utils.MatchTimestamp(start),
+				"To": utils.MatchTimestamp(end),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -148,8 +152,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId": gomega.Equal(app),
-				"From": gomega.BeNil(),
-				"To": gomega.BeNil(),
+				"From": utils.MatchTimestamp(start),
+				"To": utils.MatchTimestamp(end),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -200,7 +204,7 @@ var _ = ginkgo.Describe("Search", func() {
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId": gomega.Equal(app),
 				"From": utils.MatchTimestamp(from),
-				"To": gomega.BeNil(),
+				"To": utils.MatchTimestamp(end),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -231,7 +235,7 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId": gomega.Equal(app),
-				"From": gomega.BeNil(),
+				"From": utils.MatchTimestamp(start),
 				"To": utils.MatchTimestamp(to),
 			}))
 
@@ -282,7 +286,7 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(msgs).Should(gomega.ConsistOf(expected))
 
 		})
-		ginkgo.It("should return an empty results for points in time with no log entries", func() {
+		ginkgo.It("should return an empty result for points in time with no log entries", func() {
 			org := provider.Prefix("org-id-1")
 			app := provider.Prefix("app-inst-id-2")
 
@@ -297,7 +301,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId": gomega.Equal(app),
-				"To": utils.MatchTimestamp(toEarly),
+				"From": gomega.BeNil(),
+				"To": gomega.BeNil(),
 				"Entries": gomega.HaveLen(0),
 			}))
 
@@ -317,8 +322,6 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId": gomega.Equal(app),
-				"From": gomega.BeNil(),
-				"To": gomega.BeNil(),
 				"Entries": gomega.HaveLen(2),
 			}))
 

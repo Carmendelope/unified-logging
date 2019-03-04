@@ -8,6 +8,7 @@ package search
 
 import (
 	"context"
+	"time"
 
         "github.com/nalej/derrors"
 
@@ -48,12 +49,27 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 		return nil, err
 	}
 
+	// Assuming the entries are sorted, we can get the timestamp of
+	// the first and last entry to get the whole range
+	var from, to time.Time
+	if len(result) > 0 {
+		from = result[0].Timestamp
+		to = result[len(result)-1].Timestamp
+
+		// Make from/to determination independent of sort order
+		if from.After(to) {
+			tmp := from
+			from = to
+			to = tmp
+		}
+	}
+
 	// Create GRPC response
 	response := &grpc.LogResponse{
 		OrganizationId: request.GetOrganizationId(),
 		AppInstanceId: request.GetAppInstanceId(),
-		From: request.GetFrom(),
-		To: request.GetTo(),
+		From: GRPCTime(from),
+		To: GRPCTime(to),
 		Entries: GRPCEntries(result),
 	}
 	return response, nil
