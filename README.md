@@ -1,6 +1,121 @@
 # Unified logging
 
-README TBD, see NP-883
+`unified-logging` implements a distributed system to collect logs from user applications running on the Nalej platform. It uses standard components for log ingestion, storage and querying, adds an aggregation layer and leverages the existing platform constructs for the distributed nature.
+
+## Architecture
+
+Kubernetes, and therefore the Nalej platform, uses the standard Docker mechanism to collect logs from applications: everything a container writes to `stdout` or `stderr` gets captured in a file on the node where that container runs. The Unified Logging solution deploys a filebeat instance on each node to scrape those logs, filter them and store them in a cluster-local ElasticSearch instance.
+
+First of all, filebeat annotates each log line with Kubernetes information. Then, it discards any log line that does not originate from a container with the label `nalej-organization` set - in other words, it only deals with user applications. Next, it discards lines originating from `zt-sidecar` containers, as though they are deployed in a user namespace, they are not part of the user logging infromation. Lastly, it drops almost all annotations for a log line except for the Kubernetes namespace and labels, to save space.
+
+Currently the standard filebeat/ElasticSearch indexing is used - this should be changed to an index per namespace, as this will be much more efficient; this is what we will query on (as this is per application/fragment).
+
+An application cluster-local component, `unified-logging-slave`, implements `Search` and `Expire` endpoints to retrieve cluster-local logs. Search implements filters for application instance and service group instance as well as free text search and an optional time range. Expire will delete all logs for a specific application instance.
+
+The logging slave will return at most 10,000 log lines (this is a default ElasticSearch limitation). To retrieve more logs, we should implement the use of the Elastic scroll or pagination APIs.
+
+On the management cluster, the `unified-logging-coord` implements the same `Search` and `Expire` endpoints, except that it executes them on the relevant application clusters (currently, just on all available). When all logs are retrieved, the coordinator merges and sorts them before returning.
+
+The end-to-end mechanism follows our standard architecture of Public API -> Coordinator -> Application cluster API -> Slave.
+
+## To do
+
+As per above:
+
+- Optimization of cluster-local queries by reorganizing the storage indexing
+- Optimization of retrieval by only querying relevant clusters and parallel querying.
+- Pagination or scroll API use
+- Expiration for time range instead of all logs for an instance
+- Potentially storing certain log lines (by filter? with errors or warnings?) on the management cluster for longer term storage / disaster recovery and analysis.
+
+## Usage
+
+### Slave
+
+`unified-logging-slave` depends on ElasticSearch running locally, without any security mechanism. Furthermore, it expects filebeat to ingest the logs in ElasticSearch. To this end, we have deployments for both as part of the unified logging package.
+
+```
+$ ./unified-logging-slave run --help
+Launch the server API
+
+Usage:
+  unified-logging-slave run [flags]
+
+Flags:
+      --elasticAddress string   ElasticSearch address (host:port) (default "localhost:9200")
+  -h, --help                    help for run
+      --port int                Port for Unified Logging Slave gRPC API (default 8322)
+
+Global Flags:
+      --consoleLogging   Pretty print logging
+      --debug            Set debug level
+```
+
+### Coordinator
+
+```
+$ ./unified-logging-coord run --help
+Launch the server API
+
+Usage:
+  unified-logging-coord run [flags]
+
+Flags:
+      --appClusterPort int          Port used by app-cluster-api (default 443)
+      --appClusterPrefix string     Prefix for application cluster hostnames (default "appcluster")
+      --caCert string               Alternative certificate file to use for validation
+  -h, --help                        help for run
+      --insecure                    Don't validate TLS certificates
+      --port int                    Port for Unified Logging Coordinator gRPC API (default 8323)
+      --systemModelAddress string   System Model address (host:port) (default "localhost:8800")
+      --useTLS                      Use TLS to connect to application cluster (default true)
+
+Global Flags:
+      --consoleLogging   Pretty print logging
+      --debug            Set debug level
+```
+
+### API
+
+All endpoints implement:
+- `Search` with a `SearchRequest` as argument and a `LogResponse` as response, and
+- `Expire` with an `ExpirationRequest` as argument and a `common.Success` (true or false) as response.
+
+Common for both requests are an organization ID and an application instance ID. On top, a `SearchRequest` also has fields for a service group ID, a log message free text filter string, a time range and a sort order.
+
+The `LogResponse` returns the organization ID and application instance ID, the actual time range of the log lines returned and an array of timestamp / message tuples.
+
+See https://github.com/nalej/grpc-protos/tree/master/unified-logging for details.
+
+### CLI
+
+The public API CLI only implements the search request, as follows:
+
+```
+$ ./public-api-cli log search --help
+Search application logs based on application and service group instance
+
+Usage:
+  public-api-cli log search [filter string] [flags]
+
+Flags:
+      --asc                   Sort results in ascending time order
+      --desc                  Sort results in descending time order
+      --from string           Start time of logs
+  -h, --help                  help for search
+      --instanceID string     Application instance identifier
+      --redirectResultAsLog   Redirect the result to the CLI log
+      --sgInstanceID string   Service group instance identifier
+      --to string             End time of logs
+
+Global Flags:
+      --cacert string           Path of the CA certificate to validate the server connection
+      --consoleLogging          Pretty print logging
+      --debug                   Set debug level
+      --insecure                Use a insecure connection to connect to the server
+      --nalejAddress string     Address (host) of the Nalej platform
+      --organizationID string   Organization identifier
+```
 
 ## Integration tests
 
@@ -13,267 +128,3 @@ The following table contains the variables that activate the integration tests
 
 To run Elastic: `docker run --rm -it -p 9200:9200 docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0 elasticsearch`
 
-## Guidelines
-
-This repository follows the project structure recommended by the [golang community] (https://github.com/golang-standards/project-layout).
-Please refer to the previous URL for more information. We describe some relevant folders:
-
-* cmd: Applications contained in this repo. This folder contains the minimal expression of executable applications.
-This means that code such as algorithms, servers, database queries MUST not be there.
-* components: Definition of components, there corresponding Docker images and regarding files if needed. Normally, Docker
-images will simply incorporate the main Golang compiled file running an app.
-* pkg: this folder will contain most of the code supporting the applications.
-* scripts: relevent scripts needed to run applications/configure them or simply helping.
-* util: any code that without being really part of an application is useful in some context.
-
-And some relevant files:
-
-* Gopkg.toml: dependencies needed to run must be indicated here, specially if a certain version of a repo is required.
-* Makefile: the main compilation manager for projects. More information below.
-* Jenkinsfile.example: CI pipeline file. Rename it to `Jenkinsfile` to make it work with the CI. More information below.
-* Readme.md: (Actually this file) Description of the project and examples of use.
-* .version: One single line indicating the current version of the repo. For example: v0.0.1, v1.2.3, etc.
-
-## Makefile
-
-Use the `make` command to control the generation of executables, management of dependencies, testing and Docker
-images. Minor modifications have to be done in order to adapt a project with the structure defined in this document
-to be compiled using the current Makefile.
-
-## CI integration
-
-The CI integration file (`Jenkinsfile.example`) is renamed to avoid getting this template inside the CI environment. To get your project running in the CI environment, rename the file to `Jenkinsfile` and push it to GitHub, the CI will detect it automatically and run it.
-
-### Set the applications
-
-In order to know what applications have to be generated, the list of applications have to be set. This is a blank
-space separated list. The name of the apps must be the same of the folders under the cmd. For the current example,
-example-app and other-app.
-
-```bash
-# Name of the target applications to be built
-APPS=example-app other-app
-```
-
-## Set the version
-
-Any developed solution will be associated with a version. The value of the version must be indicated in the version file.
-
-## All at once
-
-Running `make all` will execute the most relevant tasks except those regarding Docker management. The resulting files
-can be found at the bin folder.
-
-For more information about particular aspects of the compilation process, please check the following sections.
-
-## Configure dependencies
-
-We use godep for the management of dependencies. To automatically update your dependencies and download the required
-packages into the vendor folder run `make dep`.
-
-## Build the apps
-
-The `make build` command generates executables compatible with your current OS. For linux-compatible executables run
-`make build-linux`. Finally, `make build-all` will run both. The resulting executable files are available under the
-bin folder.
-
-```bash
-jtmartin-mbp:golang-template juan$ ./bin/other-app
-{"level":"info","time":"2018-09-07T12:42:33+02:00","message":"You're running other example application."}
-          ----------
-         |  --------  |
-         | |########| |       __________
-         | |########| |      /__________\
- --------|  --------  |------|    --=-- |-------------
-|         ----,-,-----'      |  ======  |             |
-|       ______|_|_______     |__________|             |
-|      /  %%%%%%%%%%%%  \                             |
-|     /  %%%%%%%%%%%%%%  \                            |
-|     ^^^^^^^^^^^^^^^^^^^^                            |
-+-----------------------------------------------------+
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-```
-
-## Testing
-
-Testing runs all the available go tests for the current project. A `make test-all` is available to run just at once
-regular, coverage and race testing. Run `make test`, `make test-coverage` and `make test-race` to run regular,
-coverage and race tests accordingly. Any outcome is stored under the bin folder.
-
-## Building Docker images
-
-The `make image` option will build all the available Docker images if and only if a Dockerfile is found for the
-application in the components folder. For example, in the current example only the Docker image for example-app is
-generated. Images are tagged using the version value set in the version file. The resulting image.tar file can be
-found in the bin folder under the folder with the same application name.
-
-```bash
-bin
-├── images
-│   └── example-app
-│       ├── example-app.tar.gz
-│       └── image.tar
-└── linux_amd64
-    ├── example-app
-    └── other-app
-```
-
-## Publishing Docker images
-
-Publishing images into the Docker Hub requires a user account. Due to security restrictions the user id and password
-will be required when executing the `make publish` option. Both entries are expected to be available as environment
-variables. To set the variables run:
-
-```bash
-# Set environment variables with the credentials regarding your DockerHub account.
-export DOCKER_REGISTRY_SERVER=https://index.docker.io/v1/
-export DOCKER_USER=Type your dockerhub username, same as when you `docker login`
-export DOCKER_EMAIL=Type your dockerhub email, same as when you `docker login`
-export DOCKER_PASSWORD=Type your dockerhub pw, same as when you `docker login`
-```
-The final step for publishing images will not run if any of the variables is not set.
-
- Both, user id and password has to be typed. Docker images
-are published under the nalej project with
-
-```bash
-jtmartin-mbp:golang-template juan$ make publish
->>> Updating dependencies...
-if [ ! -d vendor ]; then \
-            echo ">>> Create vendor folder" ; \
-            mkdir vendor ; \
-        fi ;
-dep ensure -v
-Gopkg.lock was already in sync with imports and Gopkg.toml
-(1/4) Wrote github.com/inconshreveable/mousetrap@v1.0
-(2/4) Wrote github.com/spf13/pflag@v1.0.2
-(3/4) Wrote github.com/rs/zerolog@v1.8.0
-(4/4) Wrote github.com/spf13/cobra@v0.0.3
->>> Bulding for Linux...
-for app in example-app other-app; do \
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/linux_amd64/"$app" ./cmd/"$app" ; \
-        done
-mkdir -p bin/images
->>> Creating images ...
-for app in example-app other-app; do \
-        echo Create image of app $app ; \
-        if [ -f components/"$app"/Dockerfile ]; then \
-            mkdir -p bin/images/"$app" ; \
-            docker build --no-cache -t juannalej/"$app":v0.0.1 -f components/"$app"/Dockerfile bin/linux_amd64 ; \
-            docker save juannalej/"$app" > bin/images/"$app"/image.tar ; \
-            // docker rmi juannalej/"$app":v0.0.1 ; \
-            cd bin/images/"$app"/ && tar cvzf "$app".tar.gz * && cd - ; \
-        else  \
-            echo $app has no Dockerfile ; \
-        fi ; \
-    done
-Create image of app example-app
-Sending build context to Docker daemon  8.963MB
-Step 1/4 : FROM iron/go
- ---> ed7df0451f6c
-Step 2/4 : RUN mkdir /nalej
- ---> Running in bcce6861c1ee
-Removing intermediate container bcce6861c1ee
- ---> 55427806182f
-Step 3/4 : COPY example-app /nalej/
- ---> d088bed960b5
-Step 4/4 : ENTRYPOINT ["./nalej/example-app"]
- ---> Running in e09120d30b78
-Removing intermediate container e09120d30b78
- ---> 9b5bc7959ad5
-Successfully built 9b5bc7959ad5
-Successfully tagged juannalej/example-app:v0.0.1
-/bin/sh: //: is a directory
-a example-app.tar.gz: Can't add archive to itself
-a image.tar
-/Users/juan/nalej_workspace/src/github.com/nalej/golang-template
-Create image of app other-app
-other-app has no Dockerfile
->>> Publish images into Docker Hub ...
->>> Assuming credentials are available in environment variables ...
-if [ ""$DOCKER_USER"" = "" ]; then \
-            echo DOCKER_USER environment variable was not set!!! ; \
-            exit 1 ; \
-        fi ; \
-        if [ ""$DOCKER_USER"" = "" ]; then \
-        echo DOCKER_USER environment variable was not set!!! ; \
-        exit 1 ; \
-    fi ; \
-
-echo  "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
-Login Succeeded
-for app in example-app other-app; do \
-            if [ -f bin/images/"$app"/image.tar ]; then \
-                docker push juannalej/"$app":v0.0.1 ; \
-            else \
-                echo $app has no image to be pushed ; \
-            fi ; \
-            echo  Publish image of app $app ; \
-    done ; \
-    docker logout ; \
-
-The push refers to repository [docker.io/juannalej/example-app]
-f2e62fde1a0a: Pushed
-062d8b81e1c4: Pushed
-ab3cb40727df: Pushed
-c9e8b5c053a2: Pushed
-v0.0.1: digest: sha256:19bdb52e27166a930519c99fd6b9ce370e1353a27aa3bdf1efed1b4aef5e0571 size: 1155
-Publish image of app example-app
-other-app has no image to be pushed
-Publish image of app other-app
-Removing login credentials for https://index.docker.io/v1/
-```
-
-## Working with K8s and DockerHub
-
-Because we are using a private DockerHub repository for Nalej images, the image pulling process requires a
-previous authentication process. The scripts folder contains a credentials generation example that uses
-local environment variables to set a docker registry secret.
-
-```bash
-export DOCKER_REGISTRY_SERVER=https://index.docker.io/v1/
-export DOCKER_USER=Type your dockerhub username, same as when you `docker login`
-export DOCKER_EMAIL=Type your dockerhub email, same as when you `docker login`
-export DOCKER_PASSWORD=Type your dockerhub pw, same as when you `docker login`
-
-kubectl create secret docker-registry myregistrykey \
-  --docker-server=$DOCKER_REGISTRY_SERVER \
-  --docker-username=$DOCKER_USER \
-  --docker-password=$DOCKER_PASSWORD \
-  --docker-email=$DOCKER_EMAIL
-```
-
-The code above generates a token authentication for DockerHub that is stored in the corresponding secret. Now K8s
-deployment files can be set to use this secret for the next images.
-
-```yaml
-kind: Deployment
-apiVersion: apps/v1
-metadata:
-  labels:
-    app: application
-    component: example
-  name: example
-  namespace: default
-spec:
-  replicas: 1
-  revisionHistoryLimit: 10
-  selector:
-    matchLabels:
-      app: application
-      component: example
-  template:
-    metadata:
-      labels:
-        app: application
-        component: example
-    spec:
-      containers:
-      - name: example
-        image: nalej/example-app:v0.0.1
-        imagePullPolicy: Always
-        securityContext:
-          runAsUser: 2000
-      imagePullSecrets:
-      - name: myregistrykey
-```
