@@ -44,7 +44,7 @@ func (le *LoggingExecutor) ExecRequests(ctx context.Context, hosts []string, f E
 
 		count, err := f(ctx, client, i)
 		if err != nil {
-			log.Warn().Str("host", host).Err(err)
+			log.Warn().Str("host", host).Err(err).Msg("failed executing command")
 			// Continue on to next host - after trying to close connection
 		}
 		total += count
