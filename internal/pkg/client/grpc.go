@@ -56,7 +56,6 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 		options = append(options, grpc.WithInsecure())
 	}
 
-	options = append(options, grpc.WithBlock())
 	conn, err := grpc.Dial(address, options...)
 	if err != nil {
 		return nil, err
