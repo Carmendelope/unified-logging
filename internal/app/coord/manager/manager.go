@@ -105,8 +105,10 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 	var entries []*grpc_unified_logging_go.LogEntry
 	if len(out) > 0 {
 		entries = MergeAndSort(request.GetOrder(), out, total)
-		from = entries[0].Timestamp
-		to = entries[len(entries)-1].Timestamp
+		if len(entries) > 0 {
+			from = entries[0].Timestamp
+			to = entries[len(entries)-1].Timestamp
+		}
 
 		// Swap for descending order
 		if utils.GRPCTimeAfter(from, to) {
