@@ -156,12 +156,15 @@
   version = "v0.0.2"
 
 [[projects]]
-  digest = "1:a55e0792c0a632d14fc0f7a1c4b55ed2973189c2267d7197c2e13b1a44371466"
+  digest = "1:347aace88c837e2b1b65a7c603e1b74066e3ad9c26343a2001649e3a2354591b"
   name = "github.com/nalej/grpc-utils"
-  packages = ["pkg/test"]
+  packages = [
+    "pkg/conversions",
+    "pkg/test",
+  ]
   pruneopts = ""
-  revision = "3763d699ec598000c8095dc4d2e86a3ec0a169ff"
-  version = "v1.3.1"
+  revision = "926e5152669ee71c0e6904055ebe6cfb5492b599"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:f15de75c5d3590a9e78c76d6bd70640d8b9c496d4742bfb9baedd90cad3911ac"
@@ -328,7 +331,10 @@
   branch = "master"
   digest = "1:8cdef6da940ed0c6146559d452b3665683f56d276ed0b0455c461411e9476b81"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
+  packages = [
+    "googleapis/rpc/errdetails",
+    "googleapis/rpc/status",
+  ]
   pruneopts = ""
   revision = "f467c93bbac2133ff463e1f93d18d8f9f3f04451"
 
@@ -415,6 +421,7 @@
     "github.com/nalej/grpc-infrastructure-go",
     "github.com/nalej/grpc-organization-go",
     "github.com/nalej/grpc-unified-logging-go",
+    "github.com/nalej/grpc-utils/pkg/conversions",
     "github.com/nalej/grpc-utils/pkg/test",
     "github.com/olivere/elastic",
     "github.com/onsi/ginkgo",

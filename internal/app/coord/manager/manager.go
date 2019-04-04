@@ -15,9 +15,9 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/entities"
 
+	"github.com/nalej/grpc-utils/pkg/conversions"
 	"github.com/nalej/grpc-unified-logging-go"
 	"github.com/nalej/grpc-application-go"
 	"github.com/nalej/grpc-infrastructure-go"
@@ -111,7 +111,7 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		}
 
 		// Swap for descending order
-		if utils.GRPCTimeAfter(from, to) {
+		if conversions.GRPCTimeAfter(from, to) {
 			tmp := from
 			from = to
 			to = tmp
