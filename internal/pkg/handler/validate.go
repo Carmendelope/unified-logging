@@ -7,7 +7,7 @@
 package handler
 
 import (
-        "github.com/nalej/derrors"
+	"github.com/nalej/derrors"
 
 	grpc "github.com/nalej/grpc-unified-logging-go"
 	"github.com/rs/zerolog/log"

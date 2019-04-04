@@ -10,17 +10,17 @@ import (
 	"context"
 	"time"
 
-        "github.com/nalej/derrors"
+	"github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
 
-        grpc "github.com/nalej/grpc-unified-logging-go"
+	grpc "github.com/nalej/grpc-unified-logging-go"
 )
 
 type Manager struct {
-        Provider loggingstorage.Provider
+	Provider loggingstorage.Provider
 }
 
 func NewManager(provider loggingstorage.Provider) *Manager {

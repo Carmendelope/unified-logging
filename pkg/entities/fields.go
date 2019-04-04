@@ -17,12 +17,12 @@ type Field string
 // https://www.elastic.co/blog/shipping-kubernetes-logs-to-elasticsearch-with-filebeat
 
 const (
-        TimestampField Field = "@timestamp"
+	TimestampField Field = "@timestamp"
 	NamespaceField Field = "kubernetes.namespace"
 	OrganizationIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_ORGANIZATION
 	AppInstanceIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_APP_INSTANCE_ID
 	ServiceGroupInstanceIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
-        MessageField Field = "message"
+	MessageField Field = "message"
 )
 
 func (f Field) String() string {

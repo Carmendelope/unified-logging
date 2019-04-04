@@ -13,22 +13,22 @@ import (
 
 	"github.com/golang/protobuf/ptypes/timestamp"
 
-        "github.com/nalej/derrors"
+	"github.com/nalej/derrors"
 
-        "github.com/nalej/unified-logging/internal/pkg/utils"
-        "github.com/nalej/unified-logging/pkg/entities"
+	"github.com/nalej/unified-logging/internal/pkg/utils"
+	"github.com/nalej/unified-logging/pkg/entities"
 
-        "github.com/nalej/grpc-unified-logging-go"
-        "github.com/nalej/grpc-application-go"
-        "github.com/nalej/grpc-infrastructure-go"
+	"github.com/nalej/grpc-unified-logging-go"
+	"github.com/nalej/grpc-application-go"
+	"github.com/nalej/grpc-infrastructure-go"
 	"github.com/nalej/grpc-organization-go"
 	"github.com/nalej/grpc-app-cluster-api-go"
 	"github.com/nalej/grpc-common-go"
 )
 
 type Manager struct {
-        ApplicationsClient grpc_application_go.ApplicationsClient
-        ClustersClient grpc_infrastructure_go.ClustersClient
+	ApplicationsClient grpc_application_go.ApplicationsClient
+	ClustersClient grpc_infrastructure_go.ClustersClient
 
 	Executor *LoggingExecutor
 
@@ -74,11 +74,11 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 
 func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponse, derrors.Error) {
 	// We have a verified request
-        fields := &entities.FilterFields{
-                OrganizationId: request.GetOrganizationId(),
-                AppInstanceId: request.GetAppInstanceId(),
-                ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
-        }
+	fields := &entities.FilterFields{
+		OrganizationId: request.GetOrganizationId(),
+		AppInstanceId: request.GetAppInstanceId(),
+		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
+	}
 
 	hosts, err := m.GetHosts(ctx, fields)
 	if err != nil {
@@ -118,24 +118,24 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		}
 	}
 
-        // Create GRPC response
-        response := &grpc_unified_logging_go.LogResponse{
-                OrganizationId: request.GetOrganizationId(),
-                AppInstanceId: request.GetAppInstanceId(),
-                From: from,
-                To: to,
-                Entries: entries,
-        }
+	// Create GRPC response
+	response := &grpc_unified_logging_go.LogResponse{
+		OrganizationId: request.GetOrganizationId(),
+		AppInstanceId: request.GetAppInstanceId(),
+		From: from,
+		To: to,
+		Entries: entries,
+	}
 
 	return response, nil
 }
 
 func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.ExpirationRequest) (*grpc_common_go.Success, derrors.Error) {
 	// We have a verified request
-        fields := &entities.FilterFields{
-                OrganizationId: request.GetOrganizationId(),
-                AppInstanceId: request.GetAppInstanceId(),
-        }
+	fields := &entities.FilterFields{
+		OrganizationId: request.GetOrganizationId(),
+		AppInstanceId: request.GetAppInstanceId(),
+	}
 
 	hosts, err := m.GetHosts(ctx, fields)
 	if err != nil {
@@ -153,7 +153,7 @@ func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.E
 		return nil, err
 	}
 
-        return &grpc_common_go.Success{}, nil
+	return &grpc_common_go.Success{}, nil
 }
 
 func MergeAndSort(order grpc_unified_logging_go.SortOrder, in [][]*grpc_unified_logging_go.LogEntry, total int) []*grpc_unified_logging_go.LogEntry {

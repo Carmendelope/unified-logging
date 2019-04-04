@@ -12,7 +12,7 @@ import (
 	"github.com/nalej/unified-logging/internal/pkg/utils"
 
 	"github.com/nalej/grpc-unified-logging-go"
-        "github.com/nalej/grpc-common-go"
+	"github.com/nalej/grpc-common-go"
 
 	"github.com/nalej/grpc-utils/pkg/test"
 	"github.com/onsi/ginkgo"

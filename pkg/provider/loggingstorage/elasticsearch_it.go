@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"time"
 
-        "github.com/nalej/derrors"
+	"github.com/nalej/derrors"
 
 	"github.com/olivere/elastic"
 )

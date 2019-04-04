@@ -16,8 +16,8 @@ import (
 	"github.com/nalej/unified-logging/internal/app/coord/manager"
 
 	"github.com/nalej/grpc-unified-logging-go"
-        "github.com/nalej/grpc-application-go"
-        "github.com/nalej/grpc-infrastructure-go"
+	"github.com/nalej/grpc-application-go"
+	"github.com/nalej/grpc-infrastructure-go"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -69,7 +69,7 @@ func (s *Service) Run() derrors.Error {
 	executor := manager.NewLoggingExecutor(client.NewGRPCLoggingClient, params)
 
 	// Create managers and handler
-        clientManager := manager.NewManager(appsClient, clustersClient, executor, s.Configuration.AppClusterPrefix, s.Configuration.AppClusterPort)
+	clientManager := manager.NewManager(appsClient, clustersClient, executor, s.Configuration.AppClusterPrefix, s.Configuration.AppClusterPort)
 	handler := handler.NewHandler(clientManager, clientManager)
 
 	// Create server and register handler
