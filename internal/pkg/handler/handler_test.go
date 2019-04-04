@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/nalej/unified-logging/internal/pkg/managers"
-	"github.com/nalej/unified-logging/internal/pkg/utils"
 
 	"github.com/nalej/grpc-unified-logging-go"
         "github.com/nalej/grpc-common-go"
 
+	"github.com/nalej/grpc-utils/pkg/conversions"
 	"github.com/nalej/grpc-utils/pkg/test"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -30,8 +30,8 @@ const (
 )
 
 var (
-	From = utils.GRPCTime(time.Unix(0, 0))
-	To = utils.GRPCTime(time.Now())
+	From = conversions.GRPCTime(time.Unix(0, 0))
+	To = conversions.GRPCTime(time.Now())
 )
 
 var ValidSearchRequest = &grpc_unified_logging_go.SearchRequest{
