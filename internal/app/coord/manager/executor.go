@@ -9,11 +9,11 @@ package manager
 import (
 	"context"
 
-        "github.com/nalej/derrors"
+	"github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/internal/pkg/client"
 	"github.com/nalej/grpc-app-cluster-api-go"
-        "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
 )
 
 type ExecFunc func(context.Context, grpc_app_cluster_api_go.UnifiedLoggingClient, int) (int, error)

@@ -13,16 +13,16 @@ import (
 
 	"github.com/olivere/elastic"
 
-        "github.com/onsi/ginkgo"
-        "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo"
+	"github.com/onsi/gomega"
 	. "github.com/Benjamintf1/unmarshalledmatchers"
 )
 
 const (
-        OrganizationId = "77b5425b-4276-45b8-85f4-c01f74bbc376"
-        AppInstanceId = "e5a51a0b-63ea-4736-8c1c-be3d423f28f0"
-        AppInstanceId2 = "e9e38334-1da1-4f51-8f18-2bd8e2470123"
-        ServiceGroupInstanceId = "413654be-3c62-48cd-beb5-86d09462a1dc"
+	OrganizationId = "77b5425b-4276-45b8-85f4-c01f74bbc376"
+	AppInstanceId = "e5a51a0b-63ea-4736-8c1c-be3d423f28f0"
+	AppInstanceId2 = "e9e38334-1da1-4f51-8f18-2bd8e2470123"
+	ServiceGroupInstanceId = "413654be-3c62-48cd-beb5-86d09462a1dc"
 )
 
 var jsonResult = []byte(`

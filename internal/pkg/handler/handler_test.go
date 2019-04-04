@@ -11,7 +11,7 @@ import (
 	"github.com/nalej/unified-logging/internal/pkg/managers"
 
 	"github.com/nalej/grpc-unified-logging-go"
-        "github.com/nalej/grpc-common-go"
+	"github.com/nalej/grpc-common-go"
 
 	"github.com/nalej/grpc-utils/pkg/conversions"
 	"github.com/nalej/grpc-utils/pkg/test"

@@ -9,7 +9,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-        grpc "github.com/nalej/grpc-unified-logging-go"
+	grpc "github.com/nalej/grpc-unified-logging-go"
 )
 
 // Interface for Search Manager

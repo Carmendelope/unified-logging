@@ -15,9 +15,9 @@ import (
 
 	"github.com/nalej/grpc-app-cluster-api-go"
 
-        "google.golang.org/grpc"
-        "google.golang.org/grpc/credentials"
-        "github.com/rs/zerolog/log"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"github.com/rs/zerolog/log"
 )
 
 type GRPCLoggingClient struct {

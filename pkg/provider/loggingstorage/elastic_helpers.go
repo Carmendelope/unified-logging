@@ -13,7 +13,7 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/unified-logging/pkg/entities"
 
-        "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
 
 	"github.com/olivere/elastic"
 )
@@ -38,17 +38,17 @@ func getLogEntries(searchResult *elastic.SearchResult) (entities.LogEntries, der
 
 func createFilterQuery(filters entities.SearchFilter, union bool) (*elastic.BoolQuery) {
 	// Determine if we need one or all filters to match
-        query := elastic.NewBoolQuery()
-        if union {
+	query := elastic.NewBoolQuery()
+	if union {
 		// We need just a single match out of all filters
-                query = query.MinimumShouldMatch("1")
-        } else {
+		query = query.MinimumShouldMatch("1")
+	} else {
 		// We need all filters to match
 		query = query.MinimumShouldMatch("100%")
 	}
 
 	// Build filter query
-        for k, values := range filters {
+	for k, values := range filters {
 		if len(values) == 0 {
 			continue
 		}
@@ -60,7 +60,7 @@ func createFilterQuery(filters entities.SearchFilter, union bool) (*elastic.Bool
 		subQuery = subQuery.MinimumNumberShouldMatch(1)
 
 		query = query.Should(subQuery)
-        }
+	}
 
 	return query
 }
