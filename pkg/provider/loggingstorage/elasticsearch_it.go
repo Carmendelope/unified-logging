@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"time"
 
-        "github.com/nalej/derrors"
+	"github.com/nalej/derrors"
 
 	"github.com/olivere/elastic"
 )
@@ -24,35 +24,35 @@ const templateJSON = `
   "mappings": {
     "doc": {
       "properties": {
-        "@timestamp": {
-          "type": "date"
-        },
-        "message": {
-          "type": "text"
-        },
-        "stream": {
-          "type": "text"
-        },
-        "kubernetes": {
-          "properties": {
-            "namespace": {
-              "type": "keyword"
-            },
-            "labels": {
-              "properties": {
-                "nalej-organization": {
-                  "type": "keyword"
-                },
-                "nalej-app-instance-id": {
-                  "type": "keyword"
-                },
-                "nalej-service-group-instance-id": {
-                  "type": "keyword"
-                }
-              }
-            }
-          }
-        }
+	"@timestamp": {
+	  "type": "date"
+	},
+	"message": {
+	  "type": "text"
+	},
+	"stream": {
+	  "type": "text"
+	},
+	"kubernetes": {
+	  "properties": {
+	    "namespace": {
+	      "type": "keyword"
+	    },
+	    "labels": {
+	      "properties": {
+		"nalej-organization": {
+		  "type": "keyword"
+		},
+		"nalej-app-instance-id": {
+		  "type": "keyword"
+		},
+		"nalej-service-group-instance-id": {
+		  "type": "keyword"
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
   }

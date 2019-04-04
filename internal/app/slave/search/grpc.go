@@ -10,7 +10,7 @@ import (
 	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/entities"
 
-        grpc "github.com/nalej/grpc-unified-logging-go"
+	grpc "github.com/nalej/grpc-unified-logging-go"
 )
 
 func GRPCEntries(entries entities.LogEntries) []*grpc.LogEntry {

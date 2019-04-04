@@ -54,8 +54,8 @@ func (s *Service) Run() derrors.Error {
 	}
 
 	// Create managers and handler
-        searchManager := search.NewManager(elasticProvider)
-        expireManager := expire.NewManager(elasticProvider)
+	searchManager := search.NewManager(elasticProvider)
+	expireManager := expire.NewManager(elasticProvider)
 	handler := handler.NewHandler(searchManager, expireManager)
 
 	// Create server and register handler

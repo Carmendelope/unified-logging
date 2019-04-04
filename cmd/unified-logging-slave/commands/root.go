@@ -25,7 +25,7 @@ var rootCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		SetupLogging()
-                cmd.Help()
+		cmd.Help()
 	},
 }
 
