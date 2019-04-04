@@ -10,7 +10,7 @@
   version = "1.0.0"
 
 [[projects]]
-  digest = "1:3dd078fda7500c341bc26cfbc6c6a34614f295a2457149fc1045cab767cbcf18"
+  digest = "1:529d738b7976c3848cae5cf3a8036440166835e389c1f617af701eeb12a0518d"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -21,8 +21,8 @@
     "ptypes/timestamp",
   ]
   pruneopts = ""
-  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
-  version = "v1.2.0"
+  revision = "b5d812f8a3706043e23a9cd5babf2e5423744d30"
+  version = "v1.3.1"
 
 [[projects]]
   digest = "1:b3c5b95e56c06f5aa72cb2500e6ee5f44fcd122872d4fec2023a488e561218bc"
@@ -48,7 +48,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:212bebc561f4f654a653225868b2a97353cd5e160dc0b0bbc7232b06608474ec"
+  digest = "1:cae59d7b8243c671c9f544965522ba35c0fec48ee80adb9f1400cd2f33abbbec"
   name = "github.com/mailru/easyjson"
   packages = [
     ".",
@@ -57,18 +57,15 @@
     "jwriter",
   ]
   pruneopts = ""
-  revision = "60711f1a8329503b04e1c88535f419d0bb440bff"
+  revision = "1ea4449da9834f4d333f1cc461c374aea217d249"
 
 [[projects]]
   branch = "master"
-  digest = "1:68607ece82df2dd447829988c0cad9b0fe36ce5a62adcca7e3fe41425599f93e"
+  digest = "1:0ba77d864f95ce5554771ca4e9dc974c9b1379b22f431e173d5dd310307f8ffa"
   name = "github.com/nalej/deployment-manager"
-  packages = [
-    "pkg/common",
-    "pkg/utils",
-  ]
+  packages = ["pkg/utils"]
   pruneopts = ""
-  revision = "5a0a6b3637656de3363b37b5543a63e31d11e79b"
+  revision = "7fc0201638bb22a40ad2d8695ba5013d2aa9e6c1"
 
 [[projects]]
   digest = "1:0cc441f3dfe124dd74f44dd7e466dfc17cc7edff468094fbc3847a96b5ebf6f7"
@@ -87,20 +84,20 @@
   revision = "963fce8db8e46778ce622932e01b7a643d10ed01"
 
 [[projects]]
-  digest = "1:c5f22458eb54feb47d45f1cfab7501e26195508e832df74646c2f48717d6072a"
+  digest = "1:8c9a6a0df21ab83fdcc5f34a2b32ff864b01c6c4b402ceb1fdb73b9f216f13e8"
   name = "github.com/nalej/grpc-app-cluster-api-go"
   packages = ["."]
   pruneopts = ""
-  revision = "2cbd26303129b258a903566caa9402b1fb1ed536"
-  version = "v0.0.13"
+  revision = "33ed7f25cfb4b8afefea1e7bac149e8c8e15e800"
+  version = "v0.0.14"
 
 [[projects]]
-  digest = "1:b5034e56f7f2274bc0698bf6cbcc14c591d2d6f0da771487a98b96824647b2d8"
+  digest = "1:5f122d256d0cc365838a5e7339ee8f678ce71a05bae1908ad69b565f27ec1317"
   name = "github.com/nalej/grpc-application-go"
   packages = ["."]
   pruneopts = ""
-  revision = "93ac95fb4df8896fd7cd95677daffea4b43361d2"
-  version = "v0.0.50"
+  revision = "952da2ac2fa8994b4d5eef088c550abd9ffd767c"
+  version = "v0.0.67"
 
 [[projects]]
   digest = "1:44f7426538411ea9f774f96e3b102decc9f549b188e55e29ecc15be69542a96b"
@@ -111,28 +108,36 @@
   version = "v0.0.30"
 
 [[projects]]
-  digest = "1:31d339b7fa52042e8518a241e928e356b8f67562521c544f303f40dbed635637"
+  digest = "1:086ca56e420640f6b8c6f89bed7caf9520db3827ccd30216a15de73a5d2c7e62"
   name = "github.com/nalej/grpc-conductor-go"
   packages = ["."]
   pruneopts = ""
-  revision = "e7aaa3a4cb317f9718f5847e8f7c555b91012fd8"
-  version = "v0.0.83"
+  revision = "6bb6df7368e93f111c79dab99811366dd3598354"
+  version = "v0.0.87"
 
 [[projects]]
-  digest = "1:ed3060af0a8ec263dd630da8a71d533fc0b9aa830465dbf21741a66e62e44bfc"
+  digest = "1:5f5bea40cacea90b0ac53d2eb19516d45c321aca19a78b23cb8f189094773de5"
   name = "github.com/nalej/grpc-deployment-manager-go"
   packages = ["."]
   pruneopts = ""
-  revision = "b217d1b6ab43b7920d949c38c4e83a5f22707302"
-  version = "v0.0.46"
+  revision = "1e821a4a94b2bdde393fad39c27dfdc7ad53e06b"
+  version = "v0.0.50"
 
 [[projects]]
-  digest = "1:6973c345abcc2530f5ae4ddaa179521470a37b9cc8a2b7568227190df7f381e2"
+  digest = "1:2c023b2b8f8b5894f6fc05a5d966420ad2c8f00b055f6a33d954bea7ab7fc15b"
   name = "github.com/nalej/grpc-infrastructure-go"
   packages = ["."]
   pruneopts = ""
-  revision = "ea9783c67dc5bf7f6429935c0fdc59eee3f361e1"
-  version = "v0.0.32"
+  revision = "1961f25180d5f25bbedad6a832251ebe3b90a212"
+  version = "v0.0.33"
+
+[[projects]]
+  digest = "1:563634bd58d7111660d55e03735d16f13176027243c5e0d3f2c7f4e2daf2f74b"
+  name = "github.com/nalej/grpc-infrastructure-monitor-go"
+  packages = ["."]
+  pruneopts = ""
+  revision = "17cd2b9c7c344556cc15b657a74e84ff70da5eba"
+  version = "v0.0.1"
 
 [[projects]]
   digest = "1:9921e275160e1559963d6452a918027db3563746fd03f63369ab104c0fbf16bf"
@@ -159,7 +164,7 @@
   version = "v1.3.1"
 
 [[projects]]
-  digest = "1:15904bf2ce6c7115ecea6ab1c33a40ac4fe7ca085973ed20fa9cd9d11b72484c"
+  digest = "1:f15de75c5d3590a9e78c76d6bd70640d8b9c496d4742bfb9baedd90cad3911ac"
   name = "github.com/olivere/elastic"
   packages = [
     ".",
@@ -167,11 +172,11 @@
     "uritemplates",
   ]
   pruneopts = ""
-  revision = "407a1d940dcc89e279c579eb393d0bdde8fd9ac4"
-  version = "v6.2.16"
+  revision = "8a3f2cdf773521f77a2b9517d131c6cf28be6ca1"
+  version = "v6.2.17"
 
 [[projects]]
-  digest = "1:a754db3c70741eeaeba73ec4cd970dc8918d06ced993d24891e9c0386d74f588"
+  digest = "1:a3735b0978a8b53fc2ac97a6f46ca1189f0712a00df86d6ec4cf26c1a25e6d77"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -194,11 +199,11 @@
     "types",
   ]
   pruneopts = ""
-  revision = "2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f"
-  version = "v1.7.0"
+  revision = "eea6ad008b96acdaa524f5b409513bf062b500ad"
+  version = "v1.8.0"
 
 [[projects]]
-  digest = "1:c8f0c8c28c9c1c51db72d0e7f04797cfe5d0d50528274099b6b2d6c314db7f97"
+  digest = "1:dbafce2fddb1ca331646fe2ac9c9413980368b19a60a4406a6e5861680bd73be"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -217,8 +222,8 @@
     "types",
   ]
   pruneopts = ""
-  revision = "65fb64232476ad9046e57c26cd0bff3d3a8dc6cd"
-  version = "v1.4.3"
+  revision = "90e289841c1ed79b7a598a7cd9959750cb5e89e2"
+  version = "v1.5.0"
 
 [[projects]]
   digest = "1:1d7e1867c49a6dd9856598ef7c3123604ea3daabf5b83f303ff457bcbc410b1d"
@@ -229,7 +234,7 @@
   version = "v0.8.1"
 
 [[projects]]
-  digest = "1:d518eb4bfb76545977b0be8549606e6de5c56f8887b84cc24d12f5ec1c587e3a"
+  digest = "1:1999d331dd72c89654e50c51f71f66583094d65ebbe94ba92ab64d47cc0f751e"
   name = "github.com/rs/zerolog"
   packages = [
     ".",
@@ -238,8 +243,8 @@
     "log",
   ]
   pruneopts = ""
-  revision = "8747b7b3a51b5d08ee7ac50eaf4869edaf9f714a"
-  version = "v1.11.0"
+  revision = "651d361cfeb9d0f5b9f1d14b162c66c82509ef6d"
+  version = "v1.13.0"
 
 [[projects]]
   digest = "1:a1403cc8a94b8d7956ee5e9694badef0e7b051af289caad1cf668331e3ffa4f6"
@@ -259,7 +264,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4f7cbb08d72e1163302e2d21415200a7bc281653f5f34eda8a15c0da11a337b0"
+  digest = "1:76f4e3eaabb5b06c855d73f2fad4c9ff543e8731caaaf50f200a9d0b66f965b1"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -274,15 +279,15 @@
     "trace",
   ]
   pruneopts = ""
-  revision = "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898"
+  revision = "b630fd6fe46bcfc98f989005d8b8ec1400e60a6e"
 
 [[projects]]
   branch = "master"
-  digest = "1:34c712936a39a1a1ce8e02a30f177de243baca31b5a8a372f61bffc71e517e5a"
+  digest = "1:b5e2b77379a48d1c48f2b86c5c0e7435098aaf1ed532f84fcb173339019818ba"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "153ac476189d567564fda94622d7a8c0fb338f6b"
+  revision = "81d4e9dc473e5e8c933f2aaeba2a3d81efb9aed2"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -321,14 +326,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:60a223de357ab7164a5f8dd20cf0f5e17f76530ff40f33f7ecde0c09ec19c67a"
+  digest = "1:8cdef6da940ed0c6146559d452b3665683f56d276ed0b0455c461411e9476b81"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   pruneopts = ""
-  revision = "bd968387e4aa590b3c6e4ba38ecac1ed314d43ad"
+  revision = "f467c93bbac2133ff463e1f93d18d8f9f3f04451"
 
 [[projects]]
-  digest = "1:39d4d828b87d58d114fdc211f0638f32dcae84019fe17d6b48f9b697f4b60213"
+  digest = "1:9e9c6b3804858b1a058ef81027270d307b74f4ddd727d2edff0ca002dd304adb"
   name = "google.golang.org/grpc"
   packages = [
     ".",
@@ -367,8 +372,8 @@
     "test/bufconn",
   ]
   pruneopts = ""
-  revision = "a02b0774206b209466313a0b525d2c738fe407eb"
-  version = "v1.18.0"
+  revision = "3507fb8e1a5ad030303c106fef3a47c9fdad16ad"
+  version = "v1.19.1"
 
 [[projects]]
   digest = "1:eb53021a8aa3f599d29c7102e65026242bdedce998a54837dc67f14b6a97c5fd"
@@ -401,7 +406,6 @@
   input-imports = [
     "github.com/Benjamintf1/unmarshalledmatchers",
     "github.com/golang/protobuf/ptypes/timestamp",
-    "github.com/nalej/deployment-manager/pkg/common",
     "github.com/nalej/deployment-manager/pkg/utils",
     "github.com/nalej/derrors",
     "github.com/nalej/golang-template/version",

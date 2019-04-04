@@ -5,7 +5,6 @@
 package entities
 
 import (
-	"fmt"
         "github.com/onsi/ginkgo"
         "github.com/onsi/gomega"
 )
@@ -26,7 +25,6 @@ var _ = ginkgo.Describe("Fields", func() {
 			}
 			filter := fields.ToFilters()
 			gomega.Expect(filter).Should(gomega.BeEquivalentTo(SearchFilter{
-				NamespaceField: []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
 				OrganizationIdField: []string{OrganizationId},
 				AppInstanceIdField: []string{AppInstanceId},
 				ServiceGroupInstanceIdField: []string{ServiceGroupInstanceId},
