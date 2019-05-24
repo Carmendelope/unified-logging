@@ -1,0 +1,12 @@
+{
+    "language": "golang",
+    "application_list": [
+        "unified-logging-coord",
+        "unified-logging-slave"
+    ],
+    "tools": [
+        "azure",
+        "docker",
+        "k8s"
+    ]
+}
