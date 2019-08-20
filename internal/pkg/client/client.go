@@ -17,7 +17,7 @@ type LoggingClient interface {
 
 type LoggingClientParams struct {
 	UseTLS bool
-	Insecure bool
+	SkipServerCertValidation bool
 	CACert string
 }
 

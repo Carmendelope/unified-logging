@@ -64,8 +64,8 @@ Flags:
       --appClusterPort int          Port used by app-cluster-api (default 443)
       --appClusterPrefix string     Prefix for application cluster hostnames (default "appcluster")
       --caCert string               Alternative certificate file to use for validation
-  -h, --help                        help for run
-      --insecure                    Don't validate TLS certificates
+  -h, --help                        Help for run
+      --skipServerCertValidation    Don't validate TLS certificates
       --port int                    Port for Unified Logging Coordinator gRPC API (default 8323)
       --systemModelAddress string   System Model address (host:port) (default "localhost:8800")
       --useTLS                      Use TLS to connect to application cluster (default true)
@@ -109,12 +109,12 @@ Flags:
       --to string             End time of logs
 
 Global Flags:
-      --cacert string           Path of the CA certificate to validate the server connection
-      --consoleLogging          Pretty print logging
-      --debug                   Set debug level
-      --insecure                Use a insecure connection to connect to the server
-      --nalejAddress string     Address (host) of the Nalej platform
-      --organizationID string   Organization identifier
+      --cacert string             Path of the CA certificate to validate the server connection
+      --consoleLogging            Pretty print logging
+      --debug                     Set debug level
+      --skipServerCertValidation  Use a insecure connection to connect to the server
+      --nalejAddress string       Address (host) of the Nalej platform
+      --organizationID string     Organization identifier
 ```
 
 ## Integration tests

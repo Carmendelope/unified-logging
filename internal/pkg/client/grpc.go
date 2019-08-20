@@ -31,7 +31,7 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 	log.Debug().Str("address", address).
 		Bool("tls", params.UseTLS).
 		Str("cert", params.CACert).
-		Bool("insecure", params.Insecure).
+		Bool("skipServerCertValidation", params.).
 		Msg("creating connection")
 
 	if params.UseTLS {
@@ -46,7 +46,7 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 		tlsConfig := &tls.Config{
 			RootCAs: rootCAs,
 			ServerName: strings.Split(address, ":")[0],
-			InsecureSkipVerify: params.Insecure,
+			InsecureSkipVerify: params.SkipServerCertValidation,
 		}
 
 		creds := credentials.NewTLS(tlsConfig)
