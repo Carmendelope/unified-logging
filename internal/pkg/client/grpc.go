@@ -31,7 +31,7 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 	log.Debug().Str("address", address).
 		Bool("tls", params.UseTLS).
 		Str("cert", params.CACert).
-		Bool("skipServerCertValidation", params.).
+		Bool("skipServerCertValidation", params.SkipServerCertValidation).
 		Msg("creating connection")
 
 	if params.UseTLS {
