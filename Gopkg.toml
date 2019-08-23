@@ -23,10 +23,6 @@
   version = "v6.2.16"
 
 [[constraint]]
-  name = "github.com/nalej/deployment-manager"
-  branch = "master"
-
-[[constraint]]
   name = "github.com/nalej/grpc-application-go"
   version = "v0.0.48"
 
