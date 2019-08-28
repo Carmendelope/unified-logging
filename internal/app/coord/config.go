@@ -42,6 +42,12 @@ func (conf *Config) Validate() derrors.Error {
 	if conf.AppClusterPort <= 0 {
 		return derrors.NewInvalidArgumentError("appClusterPort is required")
 	}
+	if conf.CACertPath == "" {
+		return derrors.NewInvalidArgumentError("caCertPath is required")
+	}
+	if conf.ClientCertPath == "" {
+		return derrors.NewInvalidArgumentError("clientCertPath is required")
+	}
 	return nil
 }
 
