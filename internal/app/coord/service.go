@@ -63,8 +63,9 @@ func (s *Service) Run() derrors.Error {
 	// Executor for application cluster requests
 	params := &client.LoggingClientParams{
 		UseTLS: s.Configuration.UseTLS,
-		Insecure: s.Configuration.Insecure,
-		CACert: s.Configuration.CACert,
+		SkipServerCertValidation: s.Configuration.SkipServerCertValidation,
+		CACertPath: s.Configuration.CACertPath,
+		ClientCertPath: s.Configuration.ClientCertPath,
 	}
 	executor := manager.NewLoggingExecutor(client.NewGRPCLoggingClient, params)
 

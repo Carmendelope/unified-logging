@@ -25,8 +25,10 @@ type Config struct {
 	UseTLS bool
 	// Don't validate TLS certificates
 	SkipServerCertValidation bool
-	// Alternative certificate file to use for validation
-	CACert string
+	// Alternative certificate path to use for validation
+	CACertPath string
+	// client certificate path to use for validation
+	ClientCertPath string
 }
 
 // Validate the configuration.
@@ -49,5 +51,5 @@ func (conf *Config) Print() {
 	log.Info().Str("URL", conf.SystemModelAddress).Msg("systemModelAddress")
 	log.Info().Str("prefix", conf.AppClusterPrefix).Msg("appClusterPrefix")
 	log.Info().Int("port", conf.AppClusterPort).Msg("appClusterPort")
-	log.Info().Bool("tls", conf.UseTLS).Bool("skipServerCertValidation", conf.SkipServerCertValidation).Str("cert", conf.CACert).Msg("TLS parameters")
+	log.Info().Bool("tls", conf.UseTLS).Bool("skipServerCertValidation", conf.SkipServerCertValidation).Str("cert", conf.CACertPath).Str("cert", conf.ClientCertPath).Msg("TLS parameters")
 }
