@@ -36,22 +36,6 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
-		//if params.CACertPath != "" {
-		//	caCert, err := ioutil.ReadFile(params.CACertPath)
-		//	if err != nil {
-		//		return nil, derrors.NewInternalError("Error loading server certificate")
-		//	}
-		//	err := addCert(rootCAs, caCert)
-		//	if err != nil {
-		//		return nil, err
-		//	}
-		//}
-		//
-		//tlsConfig := &tls.Config{
-		//	RootCAs: rootCAs,
-		//	ServerName: strings.Split(address, ":")[0],
-		//	InsecureSkipVerify: params.SkipServerCertValidation,
-		//}
 
 		tlsConfig := &tls.Config{
 			ServerName:   address,
