@@ -27,6 +27,7 @@ type GRPCLoggingClient struct {
 
 func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingClient, error) {
 	var options []grpc.DialOption
+	var hostname string
 
 	log.Debug().Str("address", address).
 		Bool("tls", params.UseTLS).
@@ -37,7 +38,11 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
-		hostname := strings.Split(address, ":")[0]
+		if address != "" {
+			hostname = strings.Split(address, ":")[0]
+		} else {
+			return nil, derrors.NewInvalidArgumentError("server address must be set")
+		}
 
 		tlsConfig := &tls.Config{
 			ServerName:   hostname,
