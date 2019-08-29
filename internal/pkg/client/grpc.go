@@ -13,6 +13,7 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-app-cluster-api-go"
 	"io/ioutil"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
@@ -36,9 +37,10 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
+		hostname := strings.Split(address, ":")[0]
 
 		tlsConfig := &tls.Config{
-			ServerName:   address,
+			ServerName:   hostname,
 		}
 
 		if params.CACertPath != "" {
@@ -54,7 +56,7 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 			tlsConfig.RootCAs = rootCAs
 		}
 
-		log.Debug().Str("address", address).Bool("useTLS", params.UseTLS).Str("serverCertPath", params.CACertPath).Bool("skipServerCertValidation", params.SkipServerCertValidation).Msg("creating secure connection")
+		log.Debug().Str("address", hostname).Bool("useTLS", params.UseTLS).Str("serverCertPath", params.CACertPath).Bool("skipServerCertValidation", params.SkipServerCertValidation).Msg("creating secure connection")
 
 		if params.SkipServerCertValidation {
 			log.Debug().Msg("skipping server cert validation")
