@@ -62,6 +62,18 @@ func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingC
 			tlsConfig.RootCAs = rootCAs
 		}
 
+		if params.ClientCertPath != "" {
+			log.Debug().Str("clientCertPath", params.ClientCertPath).Msg("loading client certificate")
+			clientCert, err := tls.LoadX509KeyPair(fmt.Sprintf("%s/tls.crt", params.ClientCertPath),fmt.Sprintf("%s/tls.key", params.ClientCertPath))
+			if err != nil {
+				log.Error().Str("error", err.Error()).Msg("Error loading client certificate")
+				return nil, derrors.NewInternalError("Error loading client certificate")
+			}
+
+			tlsConfig.Certificates = []tls.Certificate{clientCert}
+			tlsConfig.BuildNameToCertificate()
+		}
+
 		log.Debug().Str("address", hostname).Bool("useTLS", params.UseTLS).Str("serverCertPath", params.CACertPath).Bool("skipServerCertValidation", params.SkipServerCertValidation).Msg("creating secure connection")
 
 		if params.SkipServerCertValidation {
