@@ -6,10 +6,6 @@
 
 package entities
 
-import (
-	"github.com/nalej/deployment-manager/pkg/utils"
-)
-
 type Field string
 
 // https://www.elastic.co/guide/en/beats/filebeat/current/exported-fields-kubernetes-processor.html
@@ -19,9 +15,9 @@ type Field string
 const (
 	TimestampField Field = "@timestamp"
 	NamespaceField Field = "kubernetes.namespace"
-	OrganizationIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_ORGANIZATION
-	AppInstanceIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_APP_INSTANCE_ID
-	ServiceGroupInstanceIdField Field = "kubernetes.labels." + utils.NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
+	OrganizationIdField Field = "kubernetes.labels." + NALEJ_ANNOTATION_ORGANIZATION_ID
+	AppInstanceIdField Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_INSTANCE_ID
+	ServiceGroupInstanceIdField Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
 	MessageField Field = "message"
 )
 
