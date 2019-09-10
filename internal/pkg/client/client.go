@@ -17,8 +17,9 @@ type LoggingClient interface {
 
 type LoggingClientParams struct {
 	UseTLS bool
-	Insecure bool
-	CACert string
+	SkipServerCertValidation bool
+	CACertPath string
+	ClientCertPath string
 }
 
 type LoggingClientFactory func(address string, params *LoggingClientParams) (LoggingClient, error)

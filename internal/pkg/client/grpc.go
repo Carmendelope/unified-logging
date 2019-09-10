@@ -10,14 +10,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/nalej/derrors"
+	"github.com/nalej/grpc-app-cluster-api-go"
 	"io/ioutil"
 	"strings"
 
-	"github.com/nalej/grpc-app-cluster-api-go"
-
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"github.com/rs/zerolog/log"
 )
 
 type GRPCLoggingClient struct {
@@ -27,26 +27,58 @@ type GRPCLoggingClient struct {
 
 func NewGRPCLoggingClient(address string, params *LoggingClientParams) (LoggingClient, error) {
 	var options []grpc.DialOption
+	var hostname string
 
 	log.Debug().Str("address", address).
 		Bool("tls", params.UseTLS).
-		Str("cert", params.CACert).
-		Bool("insecure", params.Insecure).
+		Str("cert", params.CACertPath).
+		Str("cert", params.ClientCertPath).
+		Bool("skipServerCertValidation", params.SkipServerCertValidation).
 		Msg("creating connection")
 
 	if params.UseTLS {
 		rootCAs := x509.NewCertPool()
-		if params.CACert != "" {
-			err := addCert(rootCAs, params.CACert)
-			if err != nil {
-				return nil, err
-			}
+		splitHostname := strings.Split(address, ":")
+		if len(splitHostname) != 2 {
+			hostname = splitHostname[0]
+		} else {
+			return nil, derrors.NewInvalidArgumentError("server address incorrectly set")
 		}
 
 		tlsConfig := &tls.Config{
-			RootCAs: rootCAs,
-			ServerName: strings.Split(address, ":")[0],
-			InsecureSkipVerify: params.Insecure,
+			ServerName:   hostname,
+		}
+
+		if params.CACertPath != "" {
+			log.Debug().Str("serverCertPath", params.CACertPath).Msg("loading server certificate")
+			serverCert, err := ioutil.ReadFile(params.CACertPath)
+			if err != nil {
+				return nil, derrors.NewInternalError("Error loading server certificate")
+			}
+			added := rootCAs.AppendCertsFromPEM(serverCert)
+			if !added {
+				return nil, derrors.NewInternalError("cannot add server certificate to the pool")
+			}
+			tlsConfig.RootCAs = rootCAs
+		}
+
+		if params.ClientCertPath != "" {
+			log.Debug().Str("clientCertPath", params.ClientCertPath).Msg("loading client certificate")
+			clientCert, err := tls.LoadX509KeyPair(fmt.Sprintf("%s/tls.crt", params.ClientCertPath),fmt.Sprintf("%s/tls.key", params.ClientCertPath))
+			if err != nil {
+				log.Error().Str("error", err.Error()).Msg("Error loading client certificate")
+				return nil, derrors.NewInternalError("Error loading client certificate")
+			}
+
+			tlsConfig.Certificates = []tls.Certificate{clientCert}
+			tlsConfig.BuildNameToCertificate()
+		}
+
+		log.Debug().Str("address", hostname).Bool("useTLS", params.UseTLS).Str("serverCertPath", params.CACertPath).Bool("skipServerCertValidation", params.SkipServerCertValidation).Msg("creating secure connection")
+
+		if params.SkipServerCertValidation {
+			log.Debug().Msg("skipping server cert validation")
+			tlsConfig.InsecureSkipVerify = true
 		}
 
 		creds := credentials.NewTLS(tlsConfig)

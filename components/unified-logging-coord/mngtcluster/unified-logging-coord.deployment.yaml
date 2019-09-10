@@ -35,11 +35,27 @@ spec:
                 key: environment
         args:
         - "run"
-        - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
-        - "--caCert=/nalej/$(ENVIRONMENT).pem"
         - "--debug"
+        - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
+        - "--caCertPath=/nalej/ca-certificate/ca.crt"
+        - "--clientCertPath=/nalej/tls-client-certificate/tls.crt"
+        - "--skipServerCertValidation=false"
         ports:
         - name: api-port
           containerPort: 8323
+        volumeMounts:
+        - name: ca-certificate-volume
+          readOnly: true
+          mountPath: /nalej/ca-certificate
+        - name: tls-client-certificate-volume
+          readOnly: true
+          mountPath: /nalej/tls-client-certificate
       imagePullSecrets:
       - name: nalej-registry
+      volumes:
+        - name: ca-certificate-volume
+          secret:
+            secretName: ca-certificate
+        - name: tls-client-certificate-volume
+          secret:
+            secretName: tls-client-certificate
