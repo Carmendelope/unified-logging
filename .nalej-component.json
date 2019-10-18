@@ -1,6 +1,11 @@
 {
   "language": "golang",
+  "version": "v0.4.0",
   "application_list": [
+    "unified-logging-coord",
+    "unified-logging-slave"
+  ],
+  "image_list": [
     "unified-logging-coord",
     "unified-logging-slave"
   ],
