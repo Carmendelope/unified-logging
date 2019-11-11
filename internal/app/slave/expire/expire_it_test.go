@@ -1,5 +1,17 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /*
@@ -28,7 +40,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
-
 
 var _ = ginkgo.Describe("Expire", func() {
 	if !utils.RunIntegrationTests() {
@@ -97,7 +108,7 @@ var _ = ginkgo.Describe("Expire", func() {
 		ginkgo.It("should not remove anything when expiration of non-existent application instance is requested", func() {
 			req := &grpc_unified_logging_go.ExpirationRequest{
 				OrganizationId: provider.Prefix("org-id-1"),
-				AppInstanceId: provider.Prefix("app-inst-id-foo"),
+				AppInstanceId:  provider.Prefix("app-inst-id-foo"),
 			}
 			_, err := client.Expire(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -114,7 +125,7 @@ var _ = ginkgo.Describe("Expire", func() {
 		ginkgo.It("should be able to remove all entries for an application instance", func() {
 			req := &grpc_unified_logging_go.ExpirationRequest{
 				OrganizationId: provider.Prefix("org-id-1"),
-				AppInstanceId: provider.Prefix("app-inst-id-1"),
+				AppInstanceId:  provider.Prefix("app-inst-id-1"),
 			}
 
 			_, err := client.Expire(context.Background(), req)
@@ -123,7 +134,7 @@ var _ = ginkgo.Describe("Expire", func() {
 			// Check we have expired data
 			filters := &entities.FilterFields{
 				OrganizationId: req.OrganizationId,
-				AppInstanceId: req.AppInstanceId,
+				AppInstanceId:  req.AppInstanceId,
 			}
 			sreq := &entities.SearchRequest{
 				Filters: filters.ToFilters(),

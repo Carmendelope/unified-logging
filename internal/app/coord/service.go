@@ -1,5 +1,17 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package coord
@@ -10,18 +22,18 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/unified-logging/internal/pkg/handler"
 	"github.com/nalej/unified-logging/internal/pkg/client"
+	"github.com/nalej/unified-logging/internal/pkg/handler"
 
 	"github.com/nalej/unified-logging/internal/app/coord/manager"
 
-	"github.com/nalej/grpc-unified-logging-go"
 	"github.com/nalej/grpc-application-go"
 	"github.com/nalej/grpc-infrastructure-go"
+	"github.com/nalej/grpc-unified-logging-go"
 
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"github.com/rs/zerolog/log"
 )
 
 // Service with configuration and gRPC server
@@ -62,10 +74,10 @@ func (s *Service) Run() derrors.Error {
 
 	// Executor for application cluster requests
 	params := &client.LoggingClientParams{
-		UseTLS: s.Configuration.UseTLS,
+		UseTLS:                   s.Configuration.UseTLS,
 		SkipServerCertValidation: s.Configuration.SkipServerCertValidation,
-		CACertPath: s.Configuration.CACertPath,
-		ClientCertPath: s.Configuration.ClientCertPath,
+		CACertPath:               s.Configuration.CACertPath,
+		ClientCertPath:           s.Configuration.ClientCertPath,
 	}
 	executor := manager.NewLoggingExecutor(client.NewGRPCLoggingClient, params)
 

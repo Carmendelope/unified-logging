@@ -1,5 +1,17 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 // Manager for unified logging coordinator
@@ -11,8 +23,8 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/unified-logging/internal/pkg/client"
 	"github.com/nalej/grpc-app-cluster-api-go"
+	"github.com/nalej/unified-logging/internal/pkg/client"
 	"github.com/rs/zerolog/log"
 )
 
@@ -20,13 +32,13 @@ type ExecFunc func(context.Context, grpc_app_cluster_api_go.UnifiedLoggingClient
 
 type LoggingExecutor struct {
 	clientFactory client.LoggingClientFactory
-	params *client.LoggingClientParams
+	params        *client.LoggingClientParams
 }
 
 func NewLoggingExecutor(factory client.LoggingClientFactory, params *client.LoggingClientParams) *LoggingExecutor {
 	return &LoggingExecutor{
 		clientFactory: factory,
-		params: params,
+		params:        params,
 	}
 }
 
@@ -34,7 +46,7 @@ func (le *LoggingExecutor) ExecRequests(ctx context.Context, hosts []string, f E
 	// TODO: concurrent execution of request
 	var total int = 0
 
-	for i, host := range(hosts) {
+	for i, host := range hosts {
 		log.Debug().Str("host", host).Msg("executing on host")
 		client, err := le.clientFactory(host, le.params)
 		if err != nil {

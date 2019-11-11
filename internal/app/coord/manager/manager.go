@@ -1,5 +1,17 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 // Manager for unified logging coordinator
@@ -17,32 +29,32 @@ import (
 
 	"github.com/nalej/unified-logging/pkg/entities"
 
-	"github.com/nalej/grpc-utils/pkg/conversions"
-	"github.com/nalej/grpc-unified-logging-go"
+	"github.com/nalej/grpc-app-cluster-api-go"
 	"github.com/nalej/grpc-application-go"
+	"github.com/nalej/grpc-common-go"
 	"github.com/nalej/grpc-infrastructure-go"
 	"github.com/nalej/grpc-organization-go"
-	"github.com/nalej/grpc-app-cluster-api-go"
-	"github.com/nalej/grpc-common-go"
+	"github.com/nalej/grpc-unified-logging-go"
+	"github.com/nalej/grpc-utils/pkg/conversions"
 )
 
 type Manager struct {
 	ApplicationsClient grpc_application_go.ApplicationsClient
-	ClustersClient grpc_infrastructure_go.ClustersClient
+	ClustersClient     grpc_infrastructure_go.ClustersClient
 
 	Executor *LoggingExecutor
 
 	appClusterPrefix string
-	appClusterPort int
+	appClusterPort   int
 }
 
 func NewManager(apps grpc_application_go.ApplicationsClient, clusters grpc_infrastructure_go.ClustersClient, executor *LoggingExecutor, prefix string, port int) *Manager {
 	return &Manager{
 		ApplicationsClient: apps,
-		ClustersClient: clusters,
-		Executor: executor,
-		appClusterPrefix: prefix,
-		appClusterPort: port,
+		ClustersClient:     clusters,
+		Executor:           executor,
+		appClusterPrefix:   prefix,
+		appClusterPort:     port,
 	}
 }
 
@@ -65,7 +77,7 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 
 	clusterList := clusters.GetClusters()
 	hosts := make([]string, len(clusterList))
-	for i, cluster := range(clusterList) {
+	for i, cluster := range clusterList {
 		hosts[i] = fmt.Sprintf("%s%s:%d", prefix, cluster.GetHostname(), m.appClusterPort)
 	}
 
@@ -75,8 +87,8 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponse, derrors.Error) {
 	// We have a verified request
 	fields := &entities.FilterFields{
-		OrganizationId: request.GetOrganizationId(),
-		AppInstanceId: request.GetAppInstanceId(),
+		OrganizationId:         request.GetOrganizationId(),
+		AppInstanceId:          request.GetAppInstanceId(),
 		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
 	}
 
@@ -121,10 +133,10 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 	// Create GRPC response
 	response := &grpc_unified_logging_go.LogResponse{
 		OrganizationId: request.GetOrganizationId(),
-		AppInstanceId: request.GetAppInstanceId(),
-		From: from,
-		To: to,
-		Entries: entries,
+		AppInstanceId:  request.GetAppInstanceId(),
+		From:           from,
+		To:             to,
+		Entries:        entries,
 	}
 
 	return response, nil
@@ -134,7 +146,7 @@ func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.E
 	// We have a verified request
 	fields := &entities.FilterFields{
 		OrganizationId: request.GetOrganizationId(),
-		AppInstanceId: request.GetAppInstanceId(),
+		AppInstanceId:  request.GetAppInstanceId(),
 	}
 
 	hosts, err := m.GetHosts(ctx, fields)
@@ -160,7 +172,7 @@ func MergeAndSort(order grpc_unified_logging_go.SortOrder, in [][]*grpc_unified_
 	// Merge requests
 	result := make([]*grpc_unified_logging_go.LogEntry, total)
 	var count int = 0
-	for _, slice := range(in) {
+	for _, slice := range in {
 		if slice == nil {
 			continue
 		}
@@ -171,7 +183,7 @@ func MergeAndSort(order grpc_unified_logging_go.SortOrder, in [][]*grpc_unified_
 		// Sort in ascending order
 		if order == grpc_unified_logging_go.SortOrder_ASC {
 			return result[i].Timestamp.GetSeconds() < result[j].Timestamp.GetSeconds()
-		// Sort in descending order
+			// Sort in descending order
 		} else {
 			return result[i].Timestamp.GetSeconds() > result[j].Timestamp.GetSeconds()
 		}

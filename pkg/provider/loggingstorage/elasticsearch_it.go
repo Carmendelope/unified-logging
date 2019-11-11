@@ -1,5 +1,17 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 // Overloaded ElasticSearch with some functionality used for integration tests
@@ -78,20 +90,20 @@ var startTime = time.Unix(1550789643, 0).UTC()
 const templateName = "integration_test"
 
 type ElasticITEntry struct {
-	Timestamp time.Time `json:"@timestamp"`
-	Stream string `json:"stream"`
-	Message string `json:"message"`
+	Timestamp  time.Time                `json:"@timestamp"`
+	Stream     string                   `json:"stream"`
+	Message    string                   `json:"message"`
 	Kubernetes ElasticITEntryKubernetes `json:"kubernetes"`
 }
 
 type ElasticITEntryKubernetes struct {
-	Namespace string `json:"namespace"`
-	Labels ElasticITEntryKubernetesLabels `json:"labels"`
+	Namespace string                         `json:"namespace"`
+	Labels    ElasticITEntryKubernetesLabels `json:"labels"`
 }
 
 type ElasticITEntryKubernetesLabels struct {
-	OrganizationID string `json:"nalej-organization"`
-	AppInstanceID string `json:"nalej-app-instance-id"`
+	OrganizationID         string `json:"nalej-organization"`
+	AppInstanceID          string `json:"nalej-app-instance-id"`
 	ServiceGroupInstanceID string `json:"nalej-service-group-instance-id"`
 }
 
@@ -129,7 +141,7 @@ func (es *ElasticSearchIT) Add(entries []*ElasticITEntry) derrors.Error {
 	}
 
 	toAdd := client.Bulk().Index(es.Prefix(entries[0].Kubernetes.Namespace)).Type("doc")
-	for _, entry := range(entries) {
+	for _, entry := range entries {
 		toAdd = toAdd.Add(elastic.NewBulkIndexRequest().Doc(entry))
 	}
 
@@ -157,7 +169,7 @@ func (es *ElasticSearchIT) Clear() derrors.Error {
 		return derrors.NewInternalError("failed listing templates", err)
 	}
 
-	for t, _ := range(templates) {
+	for t, _ := range templates {
 		_, err := client.IndexDeleteTemplate(t).Do(context.Background())
 		if err != nil {
 			return derrors.NewInternalError("failed listing templates", err)
@@ -169,7 +181,7 @@ func (es *ElasticSearchIT) Clear() derrors.Error {
 
 func (es *ElasticSearchIT) AddTestData() derrors.Error {
 	// Add some data
-	for _, e := range(es.generateEntries()) {
+	for _, e := range es.generateEntries() {
 		err := es.Add(e)
 		if err != nil {
 			return err
@@ -179,26 +191,25 @@ func (es *ElasticSearchIT) AddTestData() derrors.Error {
 	return nil
 }
 
-
 // 10 lines for each org/app/sg combo, with 10 seconds between lines, starting at startTime
 func (es *ElasticSearchIT) generateEntries() [][]*ElasticITEntry {
 	entriesList := make([][]*ElasticITEntry, 0)
 
-	for org, apps := range(instances) {
-		for app, sgs := range(apps) {
+	for org, apps := range instances {
+		for app, sgs := range apps {
 			entries := make([]*ElasticITEntry, 0)
-			for _, sg := range(sgs) {
+			for _, sg := range sgs {
 				t := startTime
 				for i := 0; i < 10; i++ {
 					entry := &ElasticITEntry{
 						Timestamp: t,
-						Stream: "stdout",
-						Message: fmt.Sprintf("Log line %s %s %s %d", org, app, sg, i),
+						Stream:    "stdout",
+						Message:   fmt.Sprintf("Log line %s %s %s %d", org, app, sg, i),
 						Kubernetes: ElasticITEntryKubernetes{
 							Namespace: fmt.Sprintf("%s-%s", es.Prefix(org), es.Prefix(app)), // Hope it's not longer than 64
 							Labels: ElasticITEntryKubernetesLabels{
-								OrganizationID: es.Prefix(org),
-								AppInstanceID: es.Prefix(app),
+								OrganizationID:         es.Prefix(org),
+								AppInstanceID:          es.Prefix(app),
 								ServiceGroupInstanceID: es.Prefix(sg),
 							},
 						},
