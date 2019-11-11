@@ -1,5 +1,17 @@
 /*
- * Copyright (C) 2019 Nalej - All Rights Reserved
+ * Copyright 2019 Nalej
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package loggingstorage
@@ -13,15 +25,15 @@ import (
 
 	"github.com/olivere/elastic"
 
+	. "github.com/Benjamintf1/unmarshalledmatchers"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	. "github.com/Benjamintf1/unmarshalledmatchers"
 )
 
 const (
-	OrganizationId = "77b5425b-4276-45b8-85f4-c01f74bbc376"
-	AppInstanceId = "e5a51a0b-63ea-4736-8c1c-be3d423f28f0"
-	AppInstanceId2 = "e9e38334-1da1-4f51-8f18-2bd8e2470123"
+	OrganizationId         = "77b5425b-4276-45b8-85f4-c01f74bbc376"
+	AppInstanceId          = "e5a51a0b-63ea-4736-8c1c-be3d423f28f0"
+	AppInstanceId2         = "e9e38334-1da1-4f51-8f18-2bd8e2470123"
 	ServiceGroupInstanceId = "413654be-3c62-48cd-beb5-86d09462a1dc"
 )
 
@@ -32,11 +44,11 @@ var jsonResult = []byte(`
 var logEntries = entities.LogEntries{
 	&entities.LogEntry{
 		Timestamp: time.Unix(1550678785, 276000000).UTC(),
-		Msg: "Logline 1",
+		Msg:       "Logline 1",
 	},
 	&entities.LogEntry{
 		Timestamp: time.Unix(1550678785, 278000000).UTC(),
-		Msg: "Logline 2",
+		Msg:       "Logline 2",
 	},
 }
 
@@ -66,15 +78,15 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 		badResult.Hits.Hits[1].Source = &emptyJson
 
 		filter = entities.SearchFilter{
-			entities.NamespaceField: []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
-			entities.OrganizationIdField: []string{OrganizationId},
-			entities.AppInstanceIdField: []string{AppInstanceId},
+			entities.NamespaceField:              []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
+			entities.OrganizationIdField:         []string{OrganizationId},
+			entities.AppInstanceIdField:          []string{AppInstanceId},
 			entities.ServiceGroupInstanceIdField: []string{ServiceGroupInstanceId},
 		}
 		multifilter = entities.SearchFilter{
-			entities.NamespaceField: []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
+			entities.NamespaceField:      []string{fmt.Sprintf("%s-%s", OrganizationId, AppInstanceId)[:63]},
 			entities.OrganizationIdField: []string{OrganizationId},
-			entities.AppInstanceIdField: []string{AppInstanceId, AppInstanceId2},
+			entities.AppInstanceIdField:  []string{AppInstanceId, AppInstanceId2},
 		}
 
 		from = time.Unix(1550678785, 278000000).UTC()

@@ -2,6 +2,9 @@
 
 `unified-logging` implements a distributed system to collect logs from user applications running on the Nalej platform. It uses standard components for log ingestion, storage and querying, adds an aggregation layer and leverages the existing platform constructs for the distributed nature.
 
+
+## Getting Started
+
 ## Architecture
 
 Kubernetes, and therefore the Nalej platform, uses the standard Docker mechanism to collect logs from applications: everything a container writes to `stdout` or `stderr` gets captured in a file on the node where that container runs. The Unified Logging solution deploys a filebeat instance on each node to scrape those logs, filter them and store them in a cluster-local ElasticSearch instance.
@@ -28,9 +31,9 @@ As per above:
 - Expiration for time range instead of all logs for an instance
 - Potentially storing certain log lines (by filter? with errors or warnings?) on the management cluster for longer term storage / disaster recovery and analysis.
 
-## Usage
+### Prerequisites
 
-### Slave
+#### Slave
 
 `unified-logging-slave` depends on ElasticSearch running locally, without any security mechanism. Furthermore, it expects filebeat to ingest the logs in ElasticSearch. To this end, we have deployments for both as part of the unified logging package.
 
@@ -51,7 +54,7 @@ Global Flags:
       --debug            Set debug level
 ```
 
-### Coordinator
+#### Coordinator
 
 ```
 $ ./unified-logging-coord run --help
@@ -75,6 +78,53 @@ Global Flags:
       --debug            Set debug level
 ```
 
+### Build and compile
+
+In order to build and compile this repository use the provided Makefile:
+
+```
+make all
+```
+
+This operation generates the binaries for this repo, download dependencies,
+run existing tests and generate ready-to-deploy Kubernetes files.
+
+### Run tests
+
+Tests are executed using Ginkgo. To run all the available tests:
+
+```
+make test
+```
+
+### Integration tests
+
+The following table contains the variables that activate the integration tests
+
+ | Variable  | Example Value | Description |
+ | ------------- | ------------- |------------- |
+ | RUN_INTEGRATION_TEST  | true | Run integration tests |
+ | IT_ELASTIC_ADDRESS  | localhost:9200 | ElasticSearch Address |
+
+To run Elastic: `docker run --rm -it -p 9200:9200 docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0 elasticsearch`
+
+
+### Update dependencies
+
+Dependencies are managed using Godep. For an automatic dependencies download use:
+
+```
+make dep
+```
+
+In order to have all dependencies up-to-date run:
+
+```
+dep ensure -update -v
+```
+
+## User client interface
+
 ### API
 
 All endpoints implement:
@@ -85,7 +135,7 @@ Common for both requests are an organization ID and an application instance ID. 
 
 The `LogResponse` returns the organization ID and application instance ID, the actual time range of the log lines returned and an array of timestamp / message tuples.
 
-See https://github.com/nalej/grpc-protos/tree/master/unified-logging for details.
+See [unified-logging](https://github.com/nalej/grpc-protos/tree/master/unified-logging) for details.
 
 ### CLI
 
@@ -117,14 +167,28 @@ Global Flags:
       --organizationID string     Organization identifier
 ```
 
-## Integration tests
+## Contributing
 
-The following table contains the variables that activate the integration tests
+Please read [contributing.md](contributing.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
- | Variable  | Example Value | Description |
- | ------------- | ------------- |------------- |
- | RUN_INTEGRATION_TEST  | true | Run integration tests |
- | IT_ELASTIC_ADDRESS  | localhost:9200 | ElasticSearch Address |
 
-To run Elastic: `docker run --rm -it -p 9200:9200 docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.0 elasticsearch`
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/nalej/unified-logging/tags). 
+
+## Authors
+
+See also the list of [contributors](https://github.com/nalej/unified-logging/contributors) who participated in this project.
+
+## License
+This project is licensed under the Apache 2.0 License - see the [LICENSE-2.0.txt](LICENSE-2.0.txt) file for details.
+
+
+
+
+
+## Usage
+
+
+
 
