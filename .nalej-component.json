@@ -10,7 +10,6 @@
     "unified-logging-slave"
   ],
   "tools": [
-    "azure",
     "docker",
     "k8s"
   ]
