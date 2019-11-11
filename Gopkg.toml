@@ -12,11 +12,11 @@
 
 [[constraint]]
     name = "github.com/nalej/grpc-common-go"
-    version = "v0.0.30"
+    version = "v0.0.34"
 
 [[constraint]]
     name = "github.com/nalej/grpc-unified-logging-go"
-    version = "v0.0.2"
+    version = "v0.0.3"
 
 [[constraint]]
   name = "github.com/olivere/elastic"
@@ -24,19 +24,23 @@
 
 [[constraint]]
   name = "github.com/nalej/grpc-application-go"
-  version = "v0.0.48"
+  version = "v0.0.87"
 
 [[constraint]]
   name = "github.com/nalej/grpc-infrastructure-go"
-  version = "v0.0.31"
+  version = "v0.0.47"
 
 [[constraint]]
   name = "github.com/nalej/grpc-organization-go"
-  version = "v0.0.28"
+  version = "v0.0.29"
+
+[[constraint]]
+name = "github.com/nalej/grpc-deployment-manager-go"
+version = "v0.0.63"
 
 [[constraint]]
   name = "github.com/nalej/grpc-app-cluster-api-go"
-  version = "v0.0.12"
+  version = "v0.0.23"
 
 [[override]]
   source = "https://github.com/fsnotify/fsnotify/archive/v1.4.7.tar.gz"
