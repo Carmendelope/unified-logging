@@ -30,7 +30,6 @@ spec:
         args:
         - "run"
         - "--elasticAddress=elastic.__NPH_NAMESPACE:9200"
-        - "--debug"
         ports:
         - name: api-port
           containerPort: 8322
