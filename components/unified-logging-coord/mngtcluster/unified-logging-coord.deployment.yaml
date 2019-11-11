@@ -35,7 +35,6 @@ spec:
                 key: environment
         args:
         - "run"
-        - "--debug"
         - "--systemModelAddress=system-model.__NPH_NAMESPACE:8800"
         - "--caCertPath=/nalej/ca-certificate/ca.crt"
         - "--clientCertPath=/nalej/tls-client-certificate/tls.crt"
