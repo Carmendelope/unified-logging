@@ -76,20 +76,20 @@
   revision = "ee3cd403f88a1351395c56a9fdaad02cf0158bdc"
 
 [[projects]]
-  digest = "1:4b87383e6f67af502f1d7a5c334a49cee9cd54625e20b1c43edbd158669ff0fa"
+  digest = "1:a38e63062c3799bccb9057e64103f83a857c86ba037628c5b3116f6291916156"
   name = "github.com/nalej/grpc-app-cluster-api-go"
   packages = ["."]
   pruneopts = ""
-  revision = "436c376784c6252540a2d7d7e375f1513a045e04"
-  version = "v0.0.23"
+  revision = "3280a72431717029722f2ac3642840838021620a"
+  version = "v0.0.24"
 
 [[projects]]
-  digest = "1:fa2362b0a1a12ad0ad660d8e7970665ff93f645c37b77e9022aa9915356e46b5"
+  digest = "1:a5dddb9111565bbc8c78e93570d4518f8d59f543b64827974d6aae7add95f5cd"
   name = "github.com/nalej/grpc-application-go"
   packages = ["."]
   pruneopts = ""
-  revision = "7346d806549d851b7fc6174937f30ba189fe8bbf"
-  version = "v0.0.87"
+  revision = "a010d912093b45a945d46a5036acd3ed9a0ca9b9"
+  version = "v0.0.89"
 
 [[projects]]
   digest = "1:345c4e990857221495cc88b1d8ce32ee81de776f747b9d4404859896d38f091d"
@@ -140,12 +140,12 @@
   version = "v0.0.63"
 
 [[projects]]
-  digest = "1:77f1bad5ffae171bf3d5541ed55daa03e5c6de0270d3ed10a7afb594f6110c20"
+  digest = "1:1b476efeb55b40e900fe5392f259a27906c0b80606375e294023b9969112e5e3"
   name = "github.com/nalej/grpc-infrastructure-go"
   packages = ["."]
   pruneopts = ""
-  revision = "42315cee8de61d8ea3e8fb5b1e31e5f7ecfd3988"
-  version = "v0.0.47"
+  revision = "f531d00353efc5e3ca00391c7f404e454e3b42cd"
+  version = "v0.0.48"
 
 [[projects]]
   digest = "1:3ff7102c03393dd8f56c2f8e7cc5f469bb83b2aa4800b64e25fe440214309d4e"
@@ -172,28 +172,25 @@
   version = "v0.0.45"
 
 [[projects]]
-  digest = "1:0e5100c2c9fcced5b1c0f2306742cbd44dd401cfc52a4b90678c02277fb44ac2"
+  digest = "1:ba1b6bc93bc388dddeb0db8975ca32312921508dfff13803fb58c623c2350908"
   name = "github.com/nalej/grpc-organization-go"
   packages = ["."]
   pruneopts = ""
-  revision = "7d52d468280a36e3c7dff9633303edd50c416b0a"
-  version = "v0.0.29"
+  revision = "01b7464c151b4c0fe3772516e58552f8ae8ddc9f"
+  version = "v0.0.30"
 
 [[projects]]
-  digest = "1:be9b75e8734511623a81a66b4e5d578ebd3b71562429950ea3784e6200d018e8"
+  digest = "1:c98cb0eedf841e8403a81e4d504a2f5f039e3c79b0e77595e87a9319acff2f44"
   name = "github.com/nalej/grpc-unified-logging-go"
   packages = ["."]
   pruneopts = ""
-  revision = "2e3d2b4924aadd448bdcc9c5fb9a59ffdd8197b0"
-  version = "v0.0.3"
+  revision = "6db7e7a3dad49cb0ad7ca5093f718b6b959126aa"
+  version = "v0.0.5"
 
 [[projects]]
   digest = "1:0261633894934ecc23f9b2551c21676dc5e89554d76aafd8ccb84aff21196799"
   name = "github.com/nalej/grpc-utils"
-  packages = [
-    "pkg/conversions",
-    "pkg/test",
-  ]
+  packages = ["pkg/test"]
   pruneopts = ""
   revision = "f47f46a9b4002710e515fe04b3287585e1736a3f"
   version = "v1.5.0"
@@ -365,10 +362,7 @@
   branch = "master"
   digest = "1:b9fb3d58f5ef727a7ba2a82baea481e974f75e627ca1d159516d3a0b33b5dbdf"
   name = "google.golang.org/genproto"
-  packages = [
-    "googleapis/rpc/errdetails",
-    "googleapis/rpc/status",
-  ]
+  packages = ["googleapis/rpc/status"]
   pruneopts = ""
   revision = "16a3f7862a1a494c52b23987ef8a993fd3f9a85e"
 
@@ -458,7 +452,6 @@
     "github.com/nalej/grpc-infrastructure-go",
     "github.com/nalej/grpc-organization-go",
     "github.com/nalej/grpc-unified-logging-go",
-    "github.com/nalej/grpc-utils/pkg/conversions",
     "github.com/nalej/grpc-utils/pkg/test",
     "github.com/olivere/elastic",
     "github.com/onsi/ginkgo",

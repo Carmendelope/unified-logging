@@ -28,14 +28,12 @@ import (
 	"time"
 
 	"github.com/nalej/grpc-unified-logging-go"
-	"github.com/nalej/grpc-utils/pkg/conversions"
 	"github.com/nalej/grpc-utils/pkg/test"
 
 	"github.com/nalej/unified-logging/internal/pkg/handler"
 	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	"github.com/onsi/gomega/gstruct"
@@ -65,7 +63,7 @@ var _ = ginkgo.Describe("Search", func() {
 
 	var client grpc_unified_logging_go.SlaveClient
 
-	var from, to, start, end, toEarly *timestamp.Timestamp
+	var from, to, start, end, toEarly time.Time
 
 	ginkgo.BeforeSuite(func() {
 		// Set prefix to be able to run tests concurrently
@@ -102,13 +100,13 @@ var _ = ginkgo.Describe("Search", func() {
 
 		// Time bounds
 		startTime := time.Unix(1550789643, 0).UTC() // From loggingstorage.elasticsearch_it.go
-		from = conversions.GRPCTime(startTime.Add(time.Second * 30))
-		start = conversions.GRPCTime(startTime)
+		from = startTime.Add(time.Second * 30)
+		start = startTime
 
-		to = conversions.GRPCTime(startTime.Add(time.Second * 80))
-		end = conversions.GRPCTime(startTime.Add(time.Second * 90))
+		to = startTime.Add(time.Second * 80)
+		end = startTime.Add(time.Second * 90)
 
-		toEarly = conversions.GRPCTime(time.Unix(946684800, 0).UTC()) // 1/1/2000
+		toEarly = time.Unix(946684800, 0).UTC() // 1/1/2000
 	})
 
 	ginkgo.Context("Search", func() {
@@ -126,8 +124,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId":  gomega.Equal(app),
-				"From":           utils.MatchTimestamp(start),
-				"To":             utils.MatchTimestamp(end),
+				"From":           gomega.Equal(start),
+				"To":             gomega.Equal(end),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -159,8 +157,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId":  gomega.Equal(app),
-				"From":           utils.MatchTimestamp(start),
-				"To":             utils.MatchTimestamp(end),
+				"From":           gomega.Equal(start),
+				"To":             gomega.Equal(end),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -202,7 +200,7 @@ var _ = ginkgo.Describe("Search", func() {
 			req := &grpc_unified_logging_go.SearchRequest{
 				OrganizationId: org,
 				AppInstanceId:  app,
-				From:           from,
+				From:           from.Unix(),
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -210,8 +208,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId":  gomega.Equal(app),
-				"From":           utils.MatchTimestamp(from),
-				"To":             utils.MatchTimestamp(end),
+				"From":           gomega.Equal(from),
+				"To":             gomega.Equal(end),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -234,7 +232,7 @@ var _ = ginkgo.Describe("Search", func() {
 			req := &grpc_unified_logging_go.SearchRequest{
 				OrganizationId: org,
 				AppInstanceId:  app,
-				To:             to,
+				To:             to.Unix(),
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -242,8 +240,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId":  gomega.Equal(app),
-				"From":           utils.MatchTimestamp(start),
-				"To":             utils.MatchTimestamp(to),
+				"From":           gomega.Equal(start),
+				"To":             gomega.Equal(to),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -266,8 +264,8 @@ var _ = ginkgo.Describe("Search", func() {
 			req := &grpc_unified_logging_go.SearchRequest{
 				OrganizationId: org,
 				AppInstanceId:  app,
-				From:           from,
-				To:             to,
+				From:           from.Unix(),
+				To:             to.Unix(),
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -275,8 +273,8 @@ var _ = ginkgo.Describe("Search", func() {
 			gomega.Expect(*res).Should(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
 				"OrganizationId": gomega.Equal(org),
 				"AppInstanceId":  gomega.Equal(app),
-				"From":           utils.MatchTimestamp(from),
-				"To":             utils.MatchTimestamp(to),
+				"From":           gomega.Equal(from),
+				"To":             gomega.Equal(to),
 			}))
 
 			msgs := make([]string, len(res.Entries))
@@ -300,7 +298,7 @@ var _ = ginkgo.Describe("Search", func() {
 			req := &grpc_unified_logging_go.SearchRequest{
 				OrganizationId: org,
 				AppInstanceId:  app,
-				To:             toEarly,
+				To:             toEarly.Unix(),
 			}
 			res, err := client.Search(context.Background(), req)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -333,42 +331,6 @@ var _ = ginkgo.Describe("Search", func() {
 			}))
 
 			gomega.Expect(res.Entries[0].Msg).Should(gomega.ContainSubstring(" 5"))
-		})
-		ginkgo.It("should be able to retrieve logs in ascending order", func() {
-			org := provider.Prefix("org-id-1")
-			app := provider.Prefix("app-inst-id-1")
-
-			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: org,
-				AppInstanceId:  app,
-				Order:          grpc_unified_logging_go.SortOrder_ASC,
-			}
-			res, err := client.Search(context.Background(), req)
-			gomega.Expect(err).Should(gomega.Succeed())
-
-			for i := 1; i < len(res.Entries); i++ {
-				first := conversions.GoTime(res.Entries[i-1].Timestamp)
-				second := conversions.GoTime(res.Entries[i].Timestamp)
-				gomega.Expect(second).Should(gomega.BeTemporally(">=", first))
-			}
-		})
-		ginkgo.It("should be able to retrieve logs in descending order", func() {
-			org := provider.Prefix("org-id-1")
-			app := provider.Prefix("app-inst-id-1")
-
-			req := &grpc_unified_logging_go.SearchRequest{
-				OrganizationId: org,
-				AppInstanceId:  app,
-				Order:          grpc_unified_logging_go.SortOrder_DESC,
-			}
-			res, err := client.Search(context.Background(), req)
-			gomega.Expect(err).Should(gomega.Succeed())
-
-			for i := 1; i < len(res.Entries); i++ {
-				first := conversions.GoTime(res.Entries[i-1].Timestamp)
-				second := conversions.GoTime(res.Entries[i].Timestamp)
-				gomega.Expect(second).Should(gomega.BeTemporally("<=", first))
-			}
 		})
 	})
 

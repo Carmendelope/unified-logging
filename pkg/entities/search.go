@@ -59,9 +59,6 @@ type SearchRequest struct {
 	From time.Time
 	// to is the ending date in Unix time format.
 	To time.Time
-	// Order specifies the timestamp sort ordering
-	// Defaults to ascending
-	Order SortOrder
 }
 
 // IsValid check if the search request is well-formed.

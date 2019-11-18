@@ -21,10 +21,6 @@ package manager
 import (
 	"context"
 	"fmt"
-	"sort"
-
-	"github.com/golang/protobuf/ptypes/timestamp"
-
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/unified-logging/pkg/entities"
@@ -35,7 +31,6 @@ import (
 	"github.com/nalej/grpc-infrastructure-go"
 	"github.com/nalej/grpc-organization-go"
 	"github.com/nalej/grpc-unified-logging-go"
-	"github.com/nalej/grpc-utils/pkg/conversions"
 )
 
 type Manager struct {
@@ -59,8 +54,8 @@ func NewManager(apps grpc_application_go.ApplicationsClient, clusters grpc_infra
 }
 
 func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) ([]string, derrors.Error) {
-	// For now we just return al hosts for an organization
-	// TODO: filter out hosts for appinstanceid and servicegroupinstanceid
+	// For now we just return all hosts for an organization
+	// TODO: filter out hosts for appinstanceid, servicegroupinstanceid, servicegroupid, serviceId, serviceinstanceid
 
 	org := &grpc_organization_go.OrganizationId{
 		OrganizationId: fields.OrganizationId,
@@ -90,6 +85,9 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		OrganizationId:         request.GetOrganizationId(),
 		AppInstanceId:          request.GetAppInstanceId(),
 		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
+		ServiceGroupId:         request.ServiceGroupId,
+		ServiceId:              request.ServiceId,
+		ServiceInstanceId:      request.ServiceInstanceId,
 	}
 
 	hosts, err := m.GetHosts(ctx, fields)
@@ -113,30 +111,34 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		return nil, err
 	}
 
-	var from, to *timestamp.Timestamp
+	var from, to int64
 	var entries []*grpc_unified_logging_go.LogEntry
 	if len(out) > 0 {
-		entries = MergeAndSort(request.GetOrder(), out, total)
+		entries = Merge(out, total)
 		if len(entries) > 0 {
 			from = entries[0].Timestamp
 			to = entries[len(entries)-1].Timestamp
 		}
 
 		// Swap for descending order
-		if conversions.GRPCTimeAfter(from, to) {
-			tmp := from
-			from = to
-			to = tmp
-		}
+		//if conversions.GRPCTimeAfter(from, to) {
+		//	tmp := from
+		//	from = to
+		//	to = tmp
+		//}
 	}
 
 	// Create GRPC response
 	response := &grpc_unified_logging_go.LogResponse{
-		OrganizationId: request.GetOrganizationId(),
-		AppInstanceId:  request.GetAppInstanceId(),
-		From:           from,
-		To:             to,
-		Entries:        entries,
+		OrganizationId:         request.GetOrganizationId(),
+		AppInstanceId:          request.GetAppInstanceId(),
+		ServiceGroupId:         request.ServiceGroupId,
+		ServiceGroupInstanceId: request.ServiceGroupInstanceId,
+		ServiceId:              request.ServiceId,
+		ServiceInstanceId:      request.ServiceInstanceId,
+		From:                   from,
+		To:                     to,
+		Entries:                entries,
 	}
 
 	return response, nil
@@ -168,7 +170,7 @@ func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.E
 	return &grpc_common_go.Success{}, nil
 }
 
-func MergeAndSort(order grpc_unified_logging_go.SortOrder, in [][]*grpc_unified_logging_go.LogEntry, total int) []*grpc_unified_logging_go.LogEntry {
+func Merge(in [][]*grpc_unified_logging_go.LogEntry, total int) []*grpc_unified_logging_go.LogEntry {
 	// Merge requests
 	result := make([]*grpc_unified_logging_go.LogEntry, total)
 	var count int = 0
@@ -178,16 +180,6 @@ func MergeAndSort(order grpc_unified_logging_go.SortOrder, in [][]*grpc_unified_
 		}
 		count += copy(result[count:], slice)
 	}
-
-	sort.Slice(result, func(i, j int) bool {
-		// Sort in ascending order
-		if order == grpc_unified_logging_go.SortOrder_ASC {
-			return result[i].Timestamp.GetSeconds() < result[j].Timestamp.GetSeconds()
-			// Sort in descending order
-		} else {
-			return result[i].Timestamp.GetSeconds() > result[j].Timestamp.GetSeconds()
-		}
-	})
 
 	return result
 }

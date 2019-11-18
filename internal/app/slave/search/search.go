@@ -24,7 +24,6 @@ import (
 
 	"github.com/nalej/derrors"
 
-	"github.com/nalej/grpc-utils/pkg/conversions"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
 
@@ -46,16 +45,18 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 	fields := entities.FilterFields{
 		OrganizationId:         request.GetOrganizationId(),
 		AppInstanceId:          request.GetAppInstanceId(),
+		ServiceGroupId:         request.ServiceGroupId,
 		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
+		ServiceId:              request.ServiceId,
+		ServiceInstanceId:      request.ServiceInstanceId,
 	}
 
 	search := &entities.SearchRequest{
 		Filters:       fields.ToFilters(),
 		IsUnionFilter: false,
 		MsgFilter:     request.GetMsgQueryFilter(),
-		From:          conversions.GoTime(request.GetFrom()),
-		To:            conversions.GoTime(request.GetTo()),
-		Order:         entities.SortOrder(request.GetOrder()),
+		From:          time.Unix(request.GetFrom(),0),
+		To:            time.Unix(request.GetTo(),0),
 	}
 
 	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)
@@ -82,8 +83,8 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 	response := &grpc.LogResponse{
 		OrganizationId: request.GetOrganizationId(),
 		AppInstanceId:  request.GetAppInstanceId(),
-		From:           conversions.GRPCTime(from),
-		To:             conversions.GRPCTime(to),
+		From:           from.Unix(),
+		To:             to.Unix(),
 		Entries:        GRPCEntries(result),
 	}
 	return response, nil
