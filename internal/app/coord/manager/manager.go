@@ -22,8 +22,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/nalej/derrors"
-
+	"github.com/nalej/grpc-connectivity-manager-go"
 	"github.com/nalej/unified-logging/pkg/entities"
+	"time"
 
 	"github.com/nalej/grpc-app-cluster-api-go"
 	"github.com/nalej/grpc-application-go"
@@ -71,18 +72,23 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 	}
 
 	clusterList := clusters.GetClusters()
-	hosts := make([]string, len(clusterList))
-	for i, cluster := range clusterList {
-		hosts[i] = fmt.Sprintf("%s%s:%d", prefix, cluster.GetHostname(), m.appClusterPort)
+	hosts := make([]string, 0)
+	for _, cluster := range clusterList {
+		if cluster.ClusterStatus != grpc_connectivity_manager_go.ClusterStatus_OFFLINE && cluster.ClusterStatus != grpc_connectivity_manager_go.ClusterStatus_OFFLINE_CORDON {
+			hosts = append(hosts, fmt.Sprintf("%s%s:%d", prefix, cluster.GetHostname(), m.appClusterPort))
+		}
 	}
 
 	return hosts, nil
 }
 
-func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponse, derrors.Error) {
+func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, derrors.Error) {
+
+
 	// We have a verified request
 	fields := &entities.FilterFields{
 		OrganizationId:         request.GetOrganizationId(),
+		AppDescriptorId:        request.GetAppDescriptorId(),
 		AppInstanceId:          request.GetAppInstanceId(),
 		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
 		ServiceGroupId:         request.ServiceGroupId,
@@ -95,14 +101,21 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		return nil, err
 	}
 
-	out := make([][]*grpc_unified_logging_go.LogEntry, len(hosts))
+	// if we don't have date range, we ask for the last hour
+	if request.From == 0 && request.To == 0 {
+		oneHourAgo := time.Now().Add(time.Hour * (-1))
+		request.From = oneHourAgo.Unix()
+	}
+
+	// TODO: call to slave in different threads
+	out := make([]*grpc_unified_logging_go.LogResponseList, len(hosts))
 	execFunc := func(ctx context.Context, client grpc_app_cluster_api_go.UnifiedLoggingClient, i int) (int, error) {
 		res, err := client.Search(ctx, request)
 		if err != nil {
 			return 0, err
 		}
-		out[i] = res.GetEntries()
-		return len(out[i]), nil
+		out[i] = res
+		return len(out[i].Responses), nil
 	}
 
 	total, err := m.Executor.ExecRequests(ctx, hosts, execFunc)
@@ -111,37 +124,37 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		return nil, err
 	}
 
-	var from, to int64
-	var entries []*grpc_unified_logging_go.LogEntry
-	if len(out) > 0 {
-		entries = Merge(out, total)
-		if len(entries) > 0 {
-			from = entries[0].Timestamp
-			to = entries[len(entries)-1].Timestamp
+	return m.mergeAllResponses(out, total, request), nil
+}
+
+func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponseList, total int, request *grpc_unified_logging_go.SearchRequest) *grpc_unified_logging_go.LogResponseList {
+
+	// store all the responses in an array
+	// update the time-range. (Min From and MAx to)
+	result := make([]*grpc_unified_logging_go.LogResponse, total)
+	count := 0
+	maxTo := request.To
+	minFrom := request.From
+	for _, responses := range lists {
+		if responses == nil || responses.Responses == nil {
+			continue
 		}
-
-		// Swap for descending order
-		//if conversions.GRPCTimeAfter(from, to) {
-		//	tmp := from
-		//	from = to
-		//	to = tmp
-		//}
+		count += copy(result[count:], responses.Responses)
+		if responses.From < minFrom {
+			minFrom = responses.From
+		}
+		if responses.To > maxTo {
+			maxTo = responses.To
+		}
 	}
 
-	// Create GRPC response
-	response := &grpc_unified_logging_go.LogResponse{
-		OrganizationId:         request.GetOrganizationId(),
-		AppInstanceId:          request.GetAppInstanceId(),
-		ServiceGroupId:         request.ServiceGroupId,
-		ServiceGroupInstanceId: request.ServiceGroupInstanceId,
-		ServiceId:              request.ServiceId,
-		ServiceInstanceId:      request.ServiceInstanceId,
-		From:                   from,
-		To:                     to,
-		Entries:                entries,
+	return &grpc_unified_logging_go.LogResponseList{
+		OrganizationId: request.OrganizationId,
+		From: minFrom,
+		To: maxTo,
+		Responses: result,
 	}
 
-	return response, nil
 }
 
 func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.ExpirationRequest) (*grpc_common_go.Success, derrors.Error) {
@@ -170,16 +183,3 @@ func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.E
 	return &grpc_common_go.Success{}, nil
 }
 
-func Merge(in [][]*grpc_unified_logging_go.LogEntry, total int) []*grpc_unified_logging_go.LogEntry {
-	// Merge requests
-	result := make([]*grpc_unified_logging_go.LogEntry, total)
-	var count int = 0
-	for _, slice := range in {
-		if slice == nil {
-			continue
-		}
-		count += copy(result[count:], slice)
-	}
-
-	return result
-}

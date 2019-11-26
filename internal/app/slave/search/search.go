@@ -20,14 +20,12 @@ package search
 
 import (
 	"context"
-	"time"
-
+	"fmt"
 	"github.com/nalej/derrors"
-
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
 
-	grpc "github.com/nalej/grpc-unified-logging-go"
+	"github.com/nalej/grpc-unified-logging-go"
 )
 
 type Manager struct {
@@ -40,10 +38,12 @@ func NewManager(provider loggingstorage.Provider) *Manager {
 	}
 }
 
-func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error) {
+func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, derrors.Error) {
+
 	// We have a verified request - translate to entities.SearchRequest and execute
 	fields := entities.FilterFields{
 		OrganizationId:         request.GetOrganizationId(),
+		AppDescriptorId:        request.GetAppDescriptorId(),
 		AppInstanceId:          request.GetAppInstanceId(),
 		ServiceGroupId:         request.ServiceGroupId,
 		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
@@ -53,10 +53,11 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 
 	search := &entities.SearchRequest{
 		Filters:       fields.ToFilters(),
-		IsUnionFilter: false,
+		IsUnionFilter: true,
 		MsgFilter:     request.GetMsgQueryFilter(),
-		From:          time.Unix(request.GetFrom(),0),
-		To:            time.Unix(request.GetTo(),0),
+		From:          request.From,
+		To:            request.To,
+		K8sIdQueryFilter: m.convertK8Ids(request.K8SIdQueryFilter),
 	}
 
 	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)
@@ -66,26 +67,79 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 
 	// Assuming the entries are sorted, we can get the timestamp of
 	// the first and last entry to get the whole range
-	var from, to time.Time
+	from := request.From
+	to := request.To
 	if len(result) > 0 {
-		from = result[0].Timestamp
-		to = result[len(result)-1].Timestamp
+		from = result[0].Timestamp.Unix()
+		to = result[len(result)-1].Timestamp.Unix()
 
-		// Make from/to determination independent of sort order
-		if from.After(to) {
-			tmp := from
-			from = to
-			to = tmp
-		}
 	}
 
 	// Create GRPC response
-	response := &grpc.LogResponse{
-		OrganizationId: request.GetOrganizationId(),
-		AppInstanceId:  request.GetAppInstanceId(),
-		From:           from.Unix(),
-		To:             to.Unix(),
-		Entries:        GRPCEntries(result),
+	list :=  m.mergeLogEntries(request.OrganizationId, from, to, result)//, nil
+
+	return list, nil
+}
+
+func (m *Manager) convertK8Ids (labels map[string]*grpc_unified_logging_go.IdList) map[string][]string {
+	ids := make (map[string][]string, 0)
+	for key, value := range labels {
+		ids[key] = value.Ids
 	}
-	return response, nil
+	return ids
+}
+
+
+func (m *Manager) getLogEntryPK(entry entities.LogEntry) string {
+	return fmt.Sprintf("%s#%s",
+		entry.Kubernetes.Labels.AppInstanceId,
+		entry.Kubernetes.Labels.AppServiceInstanceId,
+	)
+}
+
+// mergeLogEntries group all log entries by identifiers (organizationId, appDescriptorId, AppInstanceId, etc.)
+func (m *Manager) mergeLogEntries(organizationID string, from int64, to int64, entries entities.LogEntries) *grpc_unified_logging_go.LogResponseList {
+
+	// responses is an array of responses (all messages group by serviceInstanceID)
+	responses := make([]*grpc_unified_logging_go.LogResponse, 0)
+	nextIndex := 0
+	// aux stores the index where the messages of a serviceInstanceID are stored
+	// is indexed by Instance+InstanceID
+	// The reason for implementing it in this way is because we will have the logReponses stored in an array (as we have to return them)
+	mapIndex := make(map[string]int, 0)
+	for _, entry := range entries {
+		pk := m.getLogEntryPK(*entry)
+
+		// index is the index where the responses of this entry is stored
+		index, exists := mapIndex[pk]
+		if !exists {
+			mapIndex[pk] = nextIndex
+			index = nextIndex
+
+			responses = append(responses, &grpc_unified_logging_go.LogResponse{
+				AppDescriptorId:        entry.Kubernetes.Labels.AppDescriptorId,
+				AppInstanceId:          entry.Kubernetes.Labels.AppInstanceId,
+				ServiceGroupId:         entry.Kubernetes.Labels.AppServiceGroupId,
+				ServiceGroupInstanceId: entry.Kubernetes.Labels.AppServiceGroupInstanceId,
+				ServiceId:              entry.Kubernetes.Labels.AppServiceId,
+				ServiceInstanceId:      entry.Kubernetes.Labels.AppServiceInstanceId,
+				Entries:                []*grpc_unified_logging_go.LogEntry{},
+			})
+			// we point to the next position of the array
+			nextIndex++
+		}
+		// add the message
+		responses[index].Entries = append(responses[index].Entries, &grpc_unified_logging_go.LogEntry{
+			Timestamp: entry.Timestamp.Unix(),
+			Msg:       entry.Msg,
+		})
+
+	}
+
+	return &grpc_unified_logging_go.LogResponseList{
+		OrganizationId: organizationID,
+		From:           from,
+		To:             to,
+		Responses:      responses,
+	}
 }
