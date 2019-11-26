@@ -64,14 +64,9 @@ func createFilterQuery(filters entities.SearchFilter, union bool) *elastic.BoolQ
 		if len(values) == 0 {
 			continue
 		}
-
-		subQuery := elastic.NewBoolQuery()
 		for _, v := range values {
-			subQuery = subQuery.Should(elastic.NewTermQuery(k.String(), v))
+			query = query.Must(elastic.NewTermQuery(k.String(), v))
 		}
-		subQuery = subQuery.MinimumNumberShouldMatch(1)
-
-		query = query.Should(subQuery)
 	}
 
 	return query

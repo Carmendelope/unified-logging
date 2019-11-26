@@ -21,9 +21,9 @@ package loggingstorage
 import (
 	"context"
 	"fmt"
-
 	"github.com/nalej/derrors"
 	"github.com/nalej/unified-logging/pkg/entities"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -51,7 +51,7 @@ func (es *ElasticSearch) Connect() (*elastic.Client, derrors.Error) {
 
 func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error) {
 	log.Debug().Str("address", es.address).Msg("elastic search")
-
+	
 	client, derr := es.Connect()
 	if derr != nil {
 		return nil, derr
@@ -61,13 +61,23 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 
 	// Add required filter for actual log line
 	if request.MsgFilter != "" {
-		query = query.Must(elastic.NewQueryStringQuery(request.MsgFilter).
+		query = query.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
 			DefaultField(entities.MessageField.String()).AllowLeadingWildcard(true))
+		for labels, values := range request.K8sIdQueryFilter {
+			for _, value := range values {
+				query = query.Should(elastic.NewQueryStringQuery(value).
+					DefaultField(labels).AllowLeadingWildcard(false))
+			}
+		}
 	}
 
 	// Add time constraints
-	if !request.From.IsZero() || !request.To.IsZero() {
-		query = query.Must(createTimeQuery(request.From, request.To))
+	if request.From != 0 || request.To != 0 {
+		toTime := time.Now()
+		if request.To != 0 {
+			toTime = time.Unix(request.To, 0)
+		}
+		query = query.Must(createTimeQuery(time.Unix(request.From, 0), toTime))
 	}
 
 	// Output query string for debugging
@@ -81,7 +91,7 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 
 	// Execute
 	searchResult, err := client.Search().Query(query).
-		//Sort(entities.TimestampField.String(), request.Order.ToAscending()).
+		Sort(entities.TimestampField.String(), true). // sorting ascending
 		Size(limit).
 		Do(ctx)
 	if err != nil {
