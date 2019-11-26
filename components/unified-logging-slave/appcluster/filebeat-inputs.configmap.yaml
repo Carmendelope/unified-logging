@@ -20,6 +20,10 @@ data:
               equals:
                 kubernetes.container.name: "zt-sidecar"
         - drop_event:
+                when:
+                  equals:
+                    kubernetes.labels.nalej-is-proxy: "true"
+        - drop_event:
             when:
               not:
                 has_fields: ['kubernetes.labels.nalej-organization']
