@@ -24,7 +24,7 @@ import (
 	"context"
 
 	"github.com/nalej/grpc-common-go"
-	grpc "github.com/nalej/grpc-unified-logging-go"
+	"github.com/nalej/grpc-unified-logging-go"
 	"github.com/nalej/unified-logging/internal/pkg/managers"
 	"github.com/rs/zerolog/log"
 )
@@ -42,7 +42,7 @@ func NewHandler(search managers.Search, expire managers.Expire) *Handler {
 }
 
 // Search for log entries matching a query.
-func (h *Handler) Search(ctx context.Context, request *grpc.SearchRequest) (*grpc.LogResponse, error) {
+func (h *Handler) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, error) {
 	// Validate request
 	err := validateSearch(request)
 	if err != nil {
@@ -61,7 +61,7 @@ func (h *Handler) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 }
 
 // Expire the logs of a given application.
-func (h *Handler) Expire(ctx context.Context, request *grpc.ExpirationRequest) (*grpc_common_go.Success, error) {
+func (h *Handler) Expire(ctx context.Context, request *grpc_unified_logging_go.ExpirationRequest) (*grpc_common_go.Success, error) {
 	// Validate request
 	err := validateExpire(request)
 	if err != nil {
