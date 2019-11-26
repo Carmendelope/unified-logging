@@ -21,7 +21,7 @@ import (
 
 	"github.com/nalej/derrors"
 
-	grpc "github.com/nalej/grpc-unified-logging-go"
+	"github.com/nalej/grpc-unified-logging-go"
 )
 
 type MockupSearchManager struct {
@@ -31,13 +31,12 @@ func NewMockupSearchManager() *MockupSearchManager {
 	return &MockupSearchManager{}
 }
 
-func (m *MockupSearchManager) Search(ctx context.Context, request *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error) {
-	response := &grpc.LogResponse{
+func (m *MockupSearchManager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, derrors.Error) {
+	response := &grpc_unified_logging_go.LogResponseList{
 		OrganizationId: request.GetOrganizationId(),
-		AppInstanceId:  request.GetAppInstanceId(),
 		From:           request.GetFrom(),
 		To:             request.GetTo(),
-		Entries:        []*grpc.LogEntry{},
+		Responses:      []*grpc_unified_logging_go.LogResponse{},
 	}
 	return response, nil
 }

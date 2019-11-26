@@ -17,19 +17,9 @@
 package handler
 
 import (
-	"context"
 	"time"
 
-	"github.com/nalej/unified-logging/internal/pkg/managers"
-
-	"github.com/nalej/grpc-common-go"
 	"github.com/nalej/grpc-unified-logging-go"
-
-	"github.com/nalej/grpc-utils/pkg/test"
-	"github.com/onsi/ginkgo"
-	"github.com/onsi/gomega"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/test/bufconn"
 )
 
 const (
@@ -57,7 +47,7 @@ var ValidExpirationRequest = &grpc_unified_logging_go.ExpirationRequest{
 	OrganizationId: OrganizationId,
 	AppInstanceId:  AppInstanceId,
 }
-
+/*
 var _ = ginkgo.Describe("Handler", func() {
 	// const numServices = 2
 
@@ -179,3 +169,4 @@ var _ = ginkgo.Describe("Handler", func() {
 		})
 	})
 })
+*/

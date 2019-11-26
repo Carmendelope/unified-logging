@@ -20,7 +20,7 @@ IT_ELASTIC_ADDRESS=localhost:9200
 */
 
 package search
-
+/*
 import (
 	"context"
 	"fmt"
@@ -344,3 +344,4 @@ var _ = ginkgo.Describe("Search", func() {
 		listener.Close()
 	})
 })
+*/

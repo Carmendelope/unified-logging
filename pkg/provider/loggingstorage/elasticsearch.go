@@ -61,7 +61,8 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 
 	// Add required filter for actual log line
 	if request.MsgFilter != "" {
-		query = query.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+		subQuery := elastic.NewBoolQuery()
+		subQuery = subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
 			DefaultField(entities.MessageField.String()).AllowLeadingWildcard(true))
 		for labels, values := range request.K8sIdQueryFilter {
 			for _, value := range values {
@@ -69,6 +70,9 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 					DefaultField(labels).AllowLeadingWildcard(false))
 			}
 		}
+		subQuery = subQuery.MinimumShouldMatch("1")
+		query = query.Must(subQuery)
+		query = query.MinimumShouldMatch("100%")
 	}
 
 	// Add time constraints
@@ -86,12 +90,12 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 	// If no limit, we set to the default maximum window
 	// TODO: use scroll API and pagination to retrieve results
 	if limit < 0 {
-		limit = 10000
+		limit = entities.LimitPerSearch
 	}
 
 	// Execute
 	searchResult, err := client.Search().Query(query).
-		Sort(entities.TimestampField.String(), true). // sorting ascending
+		Sort(entities.TimestampField.String(), false). // sorting descending
 		Size(limit).
 		Do(ctx)
 	if err != nil {

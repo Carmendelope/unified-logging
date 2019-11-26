@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-type LogEntries []*LogEntry
+type 	LogEntries []*LogEntry
 
 type KubernetesLabelsEntry struct {
 	OrganizationId            string `json:"nalej-organization"`
