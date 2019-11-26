@@ -20,6 +20,8 @@ package entities
 const (
 	// Annotation application instance
 	NALEJ_ANNOTATION_APP_INSTANCE_ID = "nalej-app-instance-id"
+	// Annotation application instance
+	NALEJ_ANNOTATION_APP_DESCRIPTOR = "nalej-app-descriptor"
 	// Annotation for metadata to identify the group service
 	NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID = "nalej-service-group-instance-id"
 	// Annotation for the organization

@@ -24,7 +24,23 @@ import (
 
 type LogEntries []*LogEntry
 
+type KubernetesLabelsEntry struct {
+	OrganizationId            string `json:"nalej-organization"`
+	AppDescriptorId           string `json:"nalej-app-descriptor"`
+	AppInstanceId             string `json:"nalej-app-instance-id"`
+	AppServiceGroupId         string `json:"nalej-service-group-id"`
+	AppServiceGroupInstanceId string `json:"nalej-service-group-instance-id"`
+	AppServiceId              string `json:"nalej-service-id"`
+	AppServiceInstanceId      string `json:"nalej-service-instance-id"`
+}
+
+type KubernetesEntry struct {
+	Namespace string                `json:"namespace"`
+	Labels    KubernetesLabelsEntry `json:"labels"`
+}
+
 type LogEntry struct {
-	Timestamp time.Time `json:"@timestamp"`
-	Msg       string    `json:"message"`
+	Timestamp  time.Time       `json:"@timestamp"`
+	Msg        string          `json:"message"`
+	Kubernetes KubernetesEntry `json:"kubernetes"`
 }

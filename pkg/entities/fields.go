@@ -28,6 +28,7 @@ const (
 	TimestampField              Field = "@timestamp"
 	NamespaceField              Field = "kubernetes.namespace"
 	OrganizationIdField         Field = "kubernetes.labels." + NALEJ_ANNOTATION_ORGANIZATION_ID
+	AppDescriptorField          Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_DESCRIPTOR
 	AppInstanceIdField          Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_INSTANCE_ID
 	ServiceGroupInstanceIdField Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
 	MessageField                Field = "message"
@@ -42,6 +43,7 @@ func (f Field) String() string {
 
 type FilterFields struct {
 	OrganizationId         string
+	AppDescriptorId        string
 	AppInstanceId          string
 	ServiceGroupId         string
 	ServiceGroupInstanceId string
@@ -54,6 +56,10 @@ func (f *FilterFields) ToFilters() SearchFilter {
 
 	if f.OrganizationId != "" {
 		filters[OrganizationIdField] = []string{f.OrganizationId}
+	}
+
+	if f.AppDescriptorId != "" {
+		filters[AppDescriptorField] = []string{f.AppDescriptorId}
 	}
 
 	if f.AppInstanceId != "" {
