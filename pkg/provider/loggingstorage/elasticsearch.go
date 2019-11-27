@@ -57,7 +57,7 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 		return nil, derr
 	}
 
-	query := createFilterQuery(request.Filters/*, request.IsUnionFilter*/)
+	query := createFilterQuery(request.Filters)
 
 	// Add required filter for actual log line
 	if request.MsgFilter != "" {
@@ -115,7 +115,7 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 		return derr
 	}
 
-	query := createFilterQuery(request.Filters/*, request.IsUnionFilter*/)
+	query := createFilterQuery(request.Filters)
 	query = query.MinimumShouldMatch("100%")
 
 	// TODO: Delete a specific time range

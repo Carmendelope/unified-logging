@@ -113,7 +113,7 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 
 	ginkgo.Context("createFilterQuery", func() {
 		ginkgo.It("should create a union query", func() {
-			q, err := createFilterQuery(filter, true).Source()
+			q, err := createFilterQuery(filter).MinimumShouldMatch("1").Source()
 			gomega.Expect(err).Should(gomega.Succeed())
 			jsonQ, err := json.Marshal(q)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -139,7 +139,7 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 			gomega.Expect(jsonQ).Should(MatchUnorderedJSON(jsonE))
 		})
 		ginkgo.It("should create an intersection query", func() {
-			q, err := createFilterQuery(filter, false).Source()
+			q, err := createFilterQuery(filter).MinimumShouldMatch("100%").Source()
 			gomega.Expect(err).Should(gomega.Succeed())
 			jsonQ, err := json.Marshal(q)
 			gomega.Expect(err).Should(gomega.Succeed())
@@ -165,7 +165,7 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 			gomega.Expect(jsonQ).Should(MatchUnorderedJSON(jsonE))
 		})
 		ginkgo.It("should create a query with multiple filter values", func() {
-			q, err := createFilterQuery(multifilter, true).Source()
+			q, err := createFilterQuery(multifilter,).MinimumShouldMatch("1").Source()
 			gomega.Expect(err).Should(gomega.Succeed())
 			jsonQ, err := json.Marshal(q)
 			gomega.Expect(err).Should(gomega.Succeed())
