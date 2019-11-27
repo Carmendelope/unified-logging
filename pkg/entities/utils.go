@@ -32,6 +32,11 @@ const (
 	NALEJ_ANNOTATION_SERVICE_ID = "nalej-service-id"
 	// Annotation for metadata to identify the service instance
 	NALEJ_ANNOTATION_SERVICE_INSTANCE_ID = "nalej-service-instance-id"
+	NALEJ_ANNOTATION_SERVICE_NAME = "nalej-service-name"
+	NALEJ_ANNOTATION_APP_DESCRIPTOR_NAME = "nalej-app-descriptor-name"
+	NALEJ_ANNOTATION_APP_NAME = "nalej-app-name"
+	NALEJ_ANNOTATION_SERVICE_GROUP_NAME = "nalej-service-group-name"
+
 )
 
-const LimitPerSearch = 1
+const LimitPerSearch = 10000

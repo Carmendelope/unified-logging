@@ -48,12 +48,12 @@ func getLogEntries(searchResult *elastic.SearchResult) (entities.LogEntries, der
 	return result, nil
 }
 
-func createFilterQuery(filters entities.SearchFilter, union bool) *elastic.BoolQuery {
+func createFilterQuery(filters entities.SearchFilter/*, union bool*/) *elastic.BoolQuery {
 	// Determine if we need one or all filters to match
 	query := elastic.NewBoolQuery()
 	//if union {
 		// We need just a single match out of all filters
-	//	query = query.MinimumShouldMatch("1")
+		//query = query.MinimumShouldMatch("1")
 	//} else {
 		// We need all filters to match
 	//	query = query.MinimumShouldMatch("100%")

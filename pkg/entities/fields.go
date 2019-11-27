@@ -35,6 +35,11 @@ const (
 	ServiceGroupIdField         Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_GROUP_ID
 	ServiceIdField              Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_ID
 	ServiceInstanceIdField      Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_INSTANCE_ID
+	// names
+	AppDescriptorNameField   Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_DESCRIPTOR_NAME
+	AppInstanceNameField     Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_NAME
+	AppServiceGroupNameField Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_GROUP_NAME
+	AppServiceNameField      Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_NAME
 )
 
 func (f Field) String() string {

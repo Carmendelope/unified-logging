@@ -57,22 +57,23 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 		return nil, derr
 	}
 
-	query := createFilterQuery(request.Filters, request.IsUnionFilter)
+	query := createFilterQuery(request.Filters/*, request.IsUnionFilter*/)
 
 	// Add required filter for actual log line
 	if request.MsgFilter != "" {
 		subQuery := elastic.NewBoolQuery()
 		subQuery = subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
 			DefaultField(entities.MessageField.String()).AllowLeadingWildcard(true))
-		for labels, values := range request.K8sIdQueryFilter {
-			for _, value := range values {
-				query = query.Should(elastic.NewQueryStringQuery(value).
-					DefaultField(labels).AllowLeadingWildcard(false))
-			}
-		}
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppDescriptorNameField.String()).AllowLeadingWildcard(true))
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppInstanceNameField.String()).AllowLeadingWildcard(true))
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppServiceGroupNameField.String()).AllowLeadingWildcard(true))
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppServiceNameField.String()).AllowLeadingWildcard(true))
 		subQuery = subQuery.MinimumShouldMatch("1")
 		query = query.Must(subQuery)
-		query = query.MinimumShouldMatch("100%")
 	}
 
 	// Add time constraints
@@ -114,7 +115,8 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 		return derr
 	}
 
-	query := createFilterQuery(request.Filters, request.IsUnionFilter)
+	query := createFilterQuery(request.Filters/*, request.IsUnionFilter*/)
+	query = query.MinimumShouldMatch("100%")
 
 	// TODO: Delete a specific time range
 
