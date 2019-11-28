@@ -20,7 +20,6 @@ package entities
 
 import (
 	"fmt"
-	"time"
 )
 
 // SearchFilter is a mapping of keys to arrays of values - these will be used
@@ -51,17 +50,16 @@ type SearchRequest struct {
 	// More than one filter will result in a query that's the intersection
 	// of all the filters (AND)
 	Filters SearchFilter
-	// Indicates to treat mutiple filters as a union (OR) instead of intersection
+	// Indicates to treat multiple filters as a union (OR) instead of intersection
 	IsUnionFilter bool
 	// MsgFilter is a string that filters the log entries by message text. It allows wildcards.
 	MsgFilter string
+	//K8sIdQueryFilter contains a map associating kubernetes labels with possible ids that should be matched with an OR.
+	K8sIdQueryFilter map[string][]string
 	// from is the beginning date in Unix time format.
-	From time.Time
+	From int64
 	// to is the ending date in Unix time format.
-	To time.Time
-	// Order specifies the timestamp sort ordering
-	// Defaults to ascending
-	Order SortOrder
+	To int64
 }
 
 // IsValid check if the search request is well-formed.

@@ -28,9 +28,18 @@ const (
 	TimestampField              Field = "@timestamp"
 	NamespaceField              Field = "kubernetes.namespace"
 	OrganizationIdField         Field = "kubernetes.labels." + NALEJ_ANNOTATION_ORGANIZATION_ID
+	AppDescriptorField          Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_DESCRIPTOR
 	AppInstanceIdField          Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_INSTANCE_ID
 	ServiceGroupInstanceIdField Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID
 	MessageField                Field = "message"
+	ServiceGroupIdField         Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_GROUP_ID
+	ServiceIdField              Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_ID
+	ServiceInstanceIdField      Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_INSTANCE_ID
+	// names
+	AppDescriptorNameField   Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_DESCRIPTOR_NAME
+	AppInstanceNameField     Field = "kubernetes.labels." + NALEJ_ANNOTATION_APP_NAME
+	AppServiceGroupNameField Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_GROUP_NAME
+	AppServiceNameField      Field = "kubernetes.labels." + NALEJ_ANNOTATION_SERVICE_NAME
 )
 
 func (f Field) String() string {
@@ -39,8 +48,12 @@ func (f Field) String() string {
 
 type FilterFields struct {
 	OrganizationId         string
+	AppDescriptorId        string
 	AppInstanceId          string
+	ServiceGroupId         string
 	ServiceGroupInstanceId string
+	ServiceId              string
+	ServiceInstanceId      string
 }
 
 func (f *FilterFields) ToFilters() SearchFilter {
@@ -50,12 +63,28 @@ func (f *FilterFields) ToFilters() SearchFilter {
 		filters[OrganizationIdField] = []string{f.OrganizationId}
 	}
 
+	if f.AppDescriptorId != "" {
+		filters[AppDescriptorField] = []string{f.AppDescriptorId}
+	}
+
 	if f.AppInstanceId != "" {
 		filters[AppInstanceIdField] = []string{f.AppInstanceId}
 	}
 
 	if f.ServiceGroupInstanceId != "" {
 		filters[ServiceGroupInstanceIdField] = []string{f.ServiceGroupInstanceId}
+	}
+
+	if f.ServiceGroupId != "" {
+		filters[ServiceGroupIdField] = []string{f.ServiceGroupId}
+	}
+
+	if f.ServiceId != "" {
+		filters[ServiceIdField] = []string{f.ServiceId}
+	}
+
+	if f.ServiceInstanceId != "" {
+		filters[ServiceInstanceIdField] = []string{f.ServiceInstanceId}
 	}
 
 	return filters

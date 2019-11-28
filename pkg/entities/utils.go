@@ -20,8 +20,23 @@ package entities
 const (
 	// Annotation application instance
 	NALEJ_ANNOTATION_APP_INSTANCE_ID = "nalej-app-instance-id"
+	// Annotation application instance
+	NALEJ_ANNOTATION_APP_DESCRIPTOR = "nalej-app-descriptor"
 	// Annotation for metadata to identify the group service
 	NALEJ_ANNOTATION_SERVICE_GROUP_INSTANCE_ID = "nalej-service-group-instance-id"
 	// Annotation for the organization
 	NALEJ_ANNOTATION_ORGANIZATION_ID = "nalej-organization"
+	// Annotation for metadata to identify the group
+	NALEJ_ANNOTATION_SERVICE_GROUP_ID = "nalej-service-group-id"
+	// Annotation for metadata to identify the service
+	NALEJ_ANNOTATION_SERVICE_ID = "nalej-service-id"
+	// Annotation for metadata to identify the service instance
+	NALEJ_ANNOTATION_SERVICE_INSTANCE_ID = "nalej-service-instance-id"
+	NALEJ_ANNOTATION_SERVICE_NAME = "nalej-service-name"
+	NALEJ_ANNOTATION_APP_DESCRIPTOR_NAME = "nalej-app-descriptor-name"
+	NALEJ_ANNOTATION_APP_NAME = "nalej-app-name"
+	NALEJ_ANNOTATION_SERVICE_GROUP_NAME = "nalej-service-group-name"
+
 )
+
+const LimitPerSearch = 10000

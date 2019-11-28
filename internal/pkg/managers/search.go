@@ -26,5 +26,5 @@ import (
 
 // Interface for Search Manager
 type Search interface {
-	Search(context.Context, *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error)
+	Search(context.Context, *grpc.SearchRequest) (*grpc.LogResponseList, derrors.Error)
 }

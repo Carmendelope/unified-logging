@@ -20,15 +20,10 @@ package search
 
 import (
 	"context"
-	"time"
-
 	"github.com/nalej/derrors"
-
-	"github.com/nalej/grpc-utils/pkg/conversions"
+	"github.com/nalej/grpc-unified-logging-go"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/nalej/unified-logging/pkg/provider/loggingstorage"
-
-	grpc "github.com/nalej/grpc-unified-logging-go"
 )
 
 type Manager struct {
@@ -41,21 +36,26 @@ func NewManager(provider loggingstorage.Provider) *Manager {
 	}
 }
 
-func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grpc.LogResponse, derrors.Error) {
+func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, derrors.Error) {
+
 	// We have a verified request - translate to entities.SearchRequest and execute
 	fields := entities.FilterFields{
 		OrganizationId:         request.GetOrganizationId(),
+		AppDescriptorId:        request.GetAppDescriptorId(),
 		AppInstanceId:          request.GetAppInstanceId(),
+		ServiceGroupId:         request.ServiceGroupId,
 		ServiceGroupInstanceId: request.GetServiceGroupInstanceId(),
+		ServiceId:              request.ServiceId,
+		ServiceInstanceId:      request.ServiceInstanceId,
 	}
 
 	search := &entities.SearchRequest{
-		Filters:       fields.ToFilters(),
-		IsUnionFilter: false,
-		MsgFilter:     request.GetMsgQueryFilter(),
-		From:          conversions.GoTime(request.GetFrom()),
-		To:            conversions.GoTime(request.GetTo()),
-		Order:         entities.SortOrder(request.GetOrder()),
+		Filters:          fields.ToFilters(),
+		IsUnionFilter:    true,
+		MsgFilter:        request.GetMsgQueryFilter(),
+		From:             request.From,
+		To:               request.To,
+		K8sIdQueryFilter: m.convertK8Ids(request.K8SIdQueryFilter),
 	}
 
 	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)
@@ -65,26 +65,25 @@ func (m *Manager) Search(ctx context.Context, request *grpc.SearchRequest) (*grp
 
 	// Assuming the entries are sorted, we can get the timestamp of
 	// the first and last entry to get the whole range
-	var from, to time.Time
+	from := request.From
+	to := request.To
 	if len(result) > 0 {
-		from = result[0].Timestamp
-		to = result[len(result)-1].Timestamp
+		from = result[0].Timestamp.Unix()
+		to = result[len(result)-1].Timestamp.Unix()
 
-		// Make from/to determination independent of sort order
-		if from.After(to) {
-			tmp := from
-			from = to
-			to = tmp
-		}
 	}
 
 	// Create GRPC response
-	response := &grpc.LogResponse{
-		OrganizationId: request.GetOrganizationId(),
-		AppInstanceId:  request.GetAppInstanceId(),
-		From:           conversions.GRPCTime(from),
-		To:             conversions.GRPCTime(to),
-		Entries:        GRPCEntries(result),
-	}
-	return response, nil
+	list := entities.MergeLogEntries(request.OrganizationId, from, to, result)
+
+	return list, nil
 }
+
+func (m *Manager) convertK8Ids(labels map[string]*grpc_unified_logging_go.IdList) map[string][]string {
+	ids := make(map[string][]string, 0)
+	for key, value := range labels {
+		ids[key] = value.Ids
+	}
+	return ids
+}
+

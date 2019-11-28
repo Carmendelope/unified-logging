@@ -21,9 +21,9 @@ package loggingstorage
 import (
 	"context"
 	"fmt"
-
 	"github.com/nalej/derrors"
 	"github.com/nalej/unified-logging/pkg/entities"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -51,23 +51,38 @@ func (es *ElasticSearch) Connect() (*elastic.Client, derrors.Error) {
 
 func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error) {
 	log.Debug().Str("address", es.address).Msg("elastic search")
-
+	
 	client, derr := es.Connect()
 	if derr != nil {
 		return nil, derr
 	}
 
-	query := createFilterQuery(request.Filters, request.IsUnionFilter)
+	query := createFilterQuery(request.Filters)
 
 	// Add required filter for actual log line
 	if request.MsgFilter != "" {
-		query = query.Must(elastic.NewQueryStringQuery(request.MsgFilter).
+		subQuery := elastic.NewBoolQuery()
+		subQuery = subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
 			DefaultField(entities.MessageField.String()).AllowLeadingWildcard(true))
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppDescriptorNameField.String()).AllowLeadingWildcard(true))
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppInstanceNameField.String()).AllowLeadingWildcard(true))
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppServiceGroupNameField.String()).AllowLeadingWildcard(true))
+		subQuery.Should(elastic.NewQueryStringQuery(fmt.Sprintf("*%s*", request.MsgFilter)).
+			DefaultField(entities.AppServiceNameField.String()).AllowLeadingWildcard(true))
+		subQuery = subQuery.MinimumShouldMatch("1")
+		query = query.Must(subQuery)
 	}
 
 	// Add time constraints
-	if !request.From.IsZero() || !request.To.IsZero() {
-		query = query.Must(createTimeQuery(request.From, request.To))
+	if request.From != 0 || request.To != 0 {
+		toTime := time.Now()
+		if request.To != 0 {
+			toTime = time.Unix(request.To, 0)
+		}
+		query = query.Must(createTimeQuery(time.Unix(request.From, 0), toTime))
 	}
 
 	// Output query string for debugging
@@ -76,12 +91,12 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 	// If no limit, we set to the default maximum window
 	// TODO: use scroll API and pagination to retrieve results
 	if limit < 0 {
-		limit = 10000
+		limit = entities.LimitPerSearch
 	}
 
 	// Execute
 	searchResult, err := client.Search().Query(query).
-		Sort(entities.TimestampField.String(), request.Order.ToAscending()).
+		Sort(entities.TimestampField.String(), false). // sorting descending
 		Size(limit).
 		Do(ctx)
 	if err != nil {
@@ -100,7 +115,8 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 		return derr
 	}
 
-	query := createFilterQuery(request.Filters, request.IsUnionFilter)
+	query := createFilterQuery(request.Filters)
+	query = query.MinimumShouldMatch("100%")
 
 	// TODO: Delete a specific time range
 
