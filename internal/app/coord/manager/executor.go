@@ -20,7 +20,6 @@ package manager
 
 import (
 	"context"
-
 	"github.com/nalej/derrors"
 
 	"github.com/nalej/grpc-app-cluster-api-go"
@@ -42,21 +41,24 @@ func NewLoggingExecutor(factory client.LoggingClientFactory, params *client.Logg
 	}
 }
 
-func (le *LoggingExecutor) ExecRequests(ctx context.Context, hosts []string, f ExecFunc) (int, derrors.Error) {
+func (le *LoggingExecutor) ExecRequests(ctx context.Context, hosts []ClusterInfo, f ExecFunc) (int, []string, derrors.Error) {
 	// TODO: concurrent execution of request
 	var total int = 0
+	errorIds := make ([]string, 0)
 
 	for i, host := range hosts {
-		log.Debug().Str("host", host).Msg("executing on host")
-		client, err := le.clientFactory(host, le.params)
+		log.Debug().Str("host", host.host).Msg("executing on host")
+		client, err := le.clientFactory(host.host, le.params)
 		if err != nil {
-			log.Warn().Str("host", host).Err(err).Msg("failed creating connection")
+			log.Warn().Str("host", host.host).Err(err).Msg("failed creating connection")
+			errorIds = append(errorIds, host.id)
 			continue
 		}
 
 		count, err := f(ctx, client, i)
 		if err != nil {
-			log.Warn().Str("host", host).Err(err).Msg("failed executing command")
+			log.Warn().Str("host", host.host).Err(err).Msg("failed executing command")
+			errorIds = append(errorIds, host.id)
 			// Continue on to next host - after trying to close connection
 		}
 		total += count
@@ -64,12 +66,12 @@ func (le *LoggingExecutor) ExecRequests(ctx context.Context, hosts []string, f E
 
 		cerr := client.Close()
 		if cerr != nil {
-			log.Warn().Str("host", host).Err(cerr).Msg("failed closing connection")
+			log.Warn().Str("host", host.host).Err(cerr).Msg("failed closing connection")
 			// continue anyway
 		}
 	}
 
 	// TODO: collect errors
 
-	return total, nil
+	return total, errorIds, nil
 }

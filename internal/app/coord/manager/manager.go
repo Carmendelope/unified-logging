@@ -24,6 +24,7 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-connectivity-manager-go"
 	"github.com/nalej/unified-logging/pkg/entities"
+	"github.com/rs/zerolog/log"
 	"sort"
 	"time"
 
@@ -55,7 +56,12 @@ func NewManager(apps grpc_application_go.ApplicationsClient, clusters grpc_infra
 	}
 }
 
-func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) ([]string, derrors.Error) {
+type ClusterInfo struct {
+	host string
+	id   string
+}
+
+func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) ([]ClusterInfo, derrors.Error) {
 	// For now we just return all hosts for an organization
 	// TODO: filter out hosts for appinstanceid, servicegroupinstanceid, servicegroupid, serviceId, serviceinstanceid
 
@@ -73,10 +79,11 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 	}
 
 	clusterList := clusters.GetClusters()
-	hosts := make([]string, 0)
+	hosts := make([]ClusterInfo, 0)
 	for _, cluster := range clusterList {
 		if cluster.ClusterStatus != grpc_connectivity_manager_go.ClusterStatus_OFFLINE && cluster.ClusterStatus != grpc_connectivity_manager_go.ClusterStatus_OFFLINE_CORDON {
-			hosts = append(hosts, fmt.Sprintf("%s%s:%d", prefix, cluster.GetHostname(), m.appClusterPort))
+			host := fmt.Sprintf("%s%s:%d", prefix, cluster.GetHostname(), m.appClusterPort)
+			hosts = append(hosts, ClusterInfo{host, cluster.ClusterId})
 		}
 	}
 
@@ -106,6 +113,7 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 
 	// TODO: call to slave in different threads
 	out := make([]*grpc_unified_logging_go.LogResponseList, len(hosts))
+
 	execFunc := func(ctx context.Context, client grpc_app_cluster_api_go.UnifiedLoggingClient, i int) (int, error) {
 		res, err := client.Search(ctx, request)
 		if err != nil {
@@ -115,16 +123,16 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		return len(out[i].Responses), nil
 	}
 
-	total, err := m.Executor.ExecRequests(ctx, hosts, execFunc)
+	total, errorIds, err := m.Executor.ExecRequests(ctx, hosts, execFunc)
 	// TODO: Do we return some logs when we have an error, or none?
 	if err != nil {
 		return nil, err
 	}
 
-	return m.mergeAllResponses(out, total, request), nil
+	return m.mergeAllResponses(out, total, request, errorIds), nil
 }
 
-func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponseList, total int, request *grpc_unified_logging_go.SearchRequest) *grpc_unified_logging_go.LogResponseList {
+func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponseList, total int, request *grpc_unified_logging_go.SearchRequest, errorIds []string) *grpc_unified_logging_go.LogResponseList {
 	// we need to get only the last limitPerSearch entry logs.
 	// 1) convert LogResponseList in []LogEntry
 	// 2) order by timestamp
@@ -181,7 +189,10 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 		from = logEntries[len(logEntries)-1].Timestamp.Unix()
 		to = logEntries[0].Timestamp.Unix()
 	}
-	return entities.MergeLogEntries(request.OrganizationId, from, to, logEntries)
+
+	list := entities.MergeLogEntries(request.OrganizationId, from, to, logEntries, errorIds)
+	log.Debug().Interface("responses", list).Msg("merge response")
+	return list
 
 }
 
@@ -201,12 +212,13 @@ func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.E
 		_, err := client.Expire(ctx, request)
 		return 0, err
 	}
-
-	_, err = m.Executor.ExecRequests(ctx, hosts, execFunc)
+	_, errorIds, err := m.Executor.ExecRequests(ctx, hosts, execFunc)
 	// Even with error we'll have expired something maybe - what do we do here?
 	if err != nil {
 		return nil, err
 	}
+
+	log.Debug().Interface("errors", errorIds).Msg("errors in search")
 
 	return &grpc_common_go.Success{}, nil
 }
