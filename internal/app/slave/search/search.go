@@ -73,7 +73,7 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 	}
 
 	// Create GRPC response
-	list := entities.MergeLogEntries(request.OrganizationId, from, to, result)
+	list := entities.MergeLogEntries(request.OrganizationId, from, to, result, []string{""})
 
 	return list, nil
 }

@@ -51,7 +51,7 @@ type LogEntry struct {
 	Kubernetes KubernetesEntry `json:"kubernetes"`
 }
 
-func  getLogEntryPK(entry LogEntry) string {
+func getLogEntryPK(entry LogEntry) string {
 	return fmt.Sprintf("%s#%s",
 		entry.Kubernetes.Labels.AppInstanceId,
 		entry.Kubernetes.Labels.AppServiceInstanceId,
@@ -59,7 +59,7 @@ func  getLogEntryPK(entry LogEntry) string {
 }
 
 // mergeLogEntries group all log entries by identifiers (organizationId, appDescriptorId, AppInstanceId, etc.)
-func MergeLogEntries(organizationID string, from int64, to int64, entries LogEntries) *grpc_unified_logging_go.LogResponseList {
+func MergeLogEntries(organizationID string, from int64, to int64, entries LogEntries, errorIds []string) *grpc_unified_logging_go.LogResponseList {
 
 	// responses is an array of responses (all messages group by serviceInstanceID)
 	responses := make([]*grpc_unified_logging_go.LogResponse, 0)
@@ -102,9 +102,10 @@ func MergeLogEntries(organizationID string, from int64, to int64, entries LogEnt
 	}
 
 	return &grpc_unified_logging_go.LogResponseList{
-		OrganizationId: organizationID,
-		From:           from,
-		To:             to,
-		Responses:      responses,
+		OrganizationId:   organizationID,
+		From:             from,
+		To:               to,
+		Responses:        responses,
+		FailedClusterIds: errorIds,
 	}
 }
