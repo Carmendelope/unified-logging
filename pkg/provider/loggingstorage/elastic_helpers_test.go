@@ -16,27 +16,13 @@
 
 package loggingstorage
 
-import (
-	"encoding/json"
-	"fmt"
-	"time"
-
-	"github.com/nalej/unified-logging/pkg/entities"
-
-	"github.com/olivere/elastic"
-
-	. "github.com/Benjamintf1/unmarshalledmatchers"
-	"github.com/onsi/ginkgo"
-	"github.com/onsi/gomega"
-)
-
 const (
 	OrganizationId         = "77b5425b-4276-45b8-85f4-c01f74bbc376"
 	AppInstanceId          = "e5a51a0b-63ea-4736-8c1c-be3d423f28f0"
 	AppInstanceId2         = "e9e38334-1da1-4f51-8f18-2bd8e2470123"
 	ServiceGroupInstanceId = "413654be-3c62-48cd-beb5-86d09462a1dc"
 )
-
+/*
 var jsonResult = []byte(`
 {"took":4,"timed_out":false,"_shards":{"total":10,"successful":10,"skipped":0,"failed":0},"hits":{"total":15987,"max_score":1.0,"hits":[{"_index":"filebeat-6.6.0-2019.02.20","_type":"doc","_id":"fe8bDGkBNkPZggIxE_ej","_score":1.0,"_source":{"@timestamp":"2019-02-20T16:06:25.276Z","host":{"name":"filebeat-ltk7p"},"message":"Logline 1","stream":"stderr","kubernetes":{"namespace":"77b5425b-4276-45b8-85f4-c01f74bbc376-e5a51a0b-63ea-4736-8c1c-be","labels":{"nalej-service-group-id":"f15b707c-280f-4670-b502-903e59b6dcdd","nalej-stage-id":"f2a0d800-a65f-4067-93be-23ddbc2814df","nalej-organization":"77b5425b-4276-45b8-85f4-c01f74bbc376","app":"simple-mysql","nalej-service-id":"38d0328c-4d2b-4915-8aba-7bad6b374639","nalej-app-descriptor":"5500140c-72ff-41e3-8384-2ec7f7a6a601","nalej-service-instance-id":"f84a48f5-9d53-4fb1-916c-b3010a3496db","pod-template-hash":"d7674595c","component":"simple-app","nalej-service-group-instance-id":"413654be-3c62-48cd-beb5-86d09462a1dc","nalej-app-instance-id":"e5a51a0b-63ea-4736-8c1c-be3d423f28f0"}},"beat":{"hostname":"filebeat-ltk7p","version":"6.6.0","name":"filebeat-ltk7p"}}},{"_index":"filebeat-6.6.0-2019.02.20","_type":"doc","_id":"ge8bDGkBNkPZggIxE_ej","_score":1.0,"_source":{"@timestamp":"2019-02-20T16:06:25.278Z","beat":{"hostname":"filebeat-ltk7p","version":"6.6.0","name":"filebeat-ltk7p"},"host":{"name":"filebeat-ltk7p"},"message":"Logline 2","stream":"stderr","kubernetes":{"namespace":"77b5425b-4276-45b8-85f4-c01f74bbc376-e5a51a0b-63ea-4736-8c1c-be","labels":{"nalej-service-group-instance-id":"413654be-3c62-48cd-beb5-86d09462a1dc","nalej-organization":"77b5425b-4276-45b8-85f4-c01f74bbc376","component":"simple-app","nalej-app-descriptor":"5500140c-72ff-41e3-8384-2ec7f7a6a601","app":"simple-mysql","nalej-service-id":"38d0328c-4d2b-4915-8aba-7bad6b374639","nalej-service-group-id":"f15b707c-280f-4670-b502-903e59b6dcdd","nalej-stage-id":"f2a0d800-a65f-4067-93be-23ddbc2814df","nalej-service-instance-id":"f84a48f5-9d53-4fb1-916c-b3010a3496db","pod-template-hash":"d7674595c","nalej-app-instance-id":"e5a51a0b-63ea-4736-8c1c-be3d423f28f0"}}}}]}}
 `)
@@ -233,3 +219,4 @@ var _ = ginkgo.Describe("elastic_helpers", func() {
 		})
 	})
 })
+*/

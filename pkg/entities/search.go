@@ -54,8 +54,6 @@ type SearchRequest struct {
 	IsUnionFilter bool
 	// MsgFilter is a string that filters the log entries by message text. It allows wildcards.
 	MsgFilter string
-	//K8sIdQueryFilter contains a map associating kubernetes labels with possible ids that should be matched with an OR.
-	K8sIdQueryFilter map[string][]string
 	// from is the beginning date in Unix time format.
 	From int64
 	// to is the ending date in Unix time format.

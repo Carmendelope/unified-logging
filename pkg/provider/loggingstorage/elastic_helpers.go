@@ -20,10 +20,9 @@ package loggingstorage
 
 import (
 	"encoding/json"
-	"time"
-
 	"github.com/nalej/derrors"
 	"github.com/nalej/unified-logging/pkg/entities"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -65,13 +64,13 @@ func createFilterQuery(filters entities.SearchFilter) *elastic.BoolQuery {
 	return query
 }
 
-func createTimeQuery(from, to time.Time) elastic.Query {
+func createTimeQuery(from, to int64) elastic.Query {
 	query := elastic.NewRangeQuery(entities.TimestampField.String())
-	if !from.IsZero() {
-		query = query.From(from)
+	if from != 0  {
+		query = query.From(time.Unix(from, 0))
 	}
-	if !to.IsZero() {
-		query = query.To(to)
+	if to != 0 {
+		query = query.To(time.Unix(to,0))
 	}
 
 	return query
