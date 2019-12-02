@@ -24,6 +24,7 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-connectivity-manager-go"
 	"github.com/nalej/unified-logging/pkg/entities"
+	"github.com/rs/zerolog/log"
 	"sort"
 	"time"
 
@@ -88,6 +89,8 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 // we should change the slaves so that they return an array of logs
 func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, derrors.Error) {
 
+	log.Debug().Interface("request", request).Msg("Search")
+
 	// We have a verified request
 	fields := &entities.FilterFields{
 		OrganizationId:         request.GetOrganizationId(),
@@ -124,8 +127,8 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 	return m.mergeAllResponses(out, total, request), nil
 }
 
-
 func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponseList, total int, request *grpc_unified_logging_go.SearchRequest) *grpc_unified_logging_go.LogResponseList {
+	log.Debug().Interface("request", request).Msg("mergeAllResponses")
 
 	// we need to get only the last limitPerSearch entry logs.
 	// 1) convert LogResponseList in []LogEntry
@@ -136,6 +139,10 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	// 1)
 	logEntries := make([]*entities.LogEntry, 0)
 	for _, logResponseList := range lists {
+		// if one of the slaves returns an error, logResponseList can be nil
+		if logResponseList == nil {
+			continue
+		}
 		for _, logResponse := range logResponseList.Responses {
 			for _, entry := range logResponse.Entries {
 				logEntries = append(logEntries, &entities.LogEntry{
@@ -145,10 +152,14 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 						Labels: entities.KubernetesLabelsEntry{
 							OrganizationId:            logResponseList.OrganizationId,
 							AppDescriptorId:           logResponse.AppDescriptorId,
+							AppDescriptorName:         logResponse.AppDescriptorName,
 							AppInstanceId:             logResponse.AppInstanceId,
+							AppInstanceName:           logResponse.AppInstanceName,
 							AppServiceGroupId:         logResponse.ServiceGroupId,
+							AppServiceGroupName:       logResponse.ServiceGroupName,
 							AppServiceGroupInstanceId: logResponse.ServiceGroupInstanceId,
 							AppServiceId:              logResponse.ServiceId,
+							AppServiceName:            logResponse.ServiceName,
 							AppServiceInstanceId:      logResponse.ServiceInstanceId,
 						},
 					},
@@ -167,8 +178,14 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	}
 
 	// 4)
-	from := request.From
-	to := request.To
+	var from, to int64
+	from = request.From
+
+	//if request.To == 0 {
+	//	to = time.Now().Unix()
+	//}else{
+	to = request.To
+	//}
 	if len(logEntries) > 0 {
 		from = logEntries[len(logEntries)-1].Timestamp.Unix()
 		to = logEntries[0].Timestamp.Unix()
@@ -176,7 +193,6 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	return entities.MergeLogEntries(request.OrganizationId, from, to, logEntries)
 
 }
-
 
 func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.ExpirationRequest) (*grpc_common_go.Success, derrors.Error) {
 	// We have a verified request

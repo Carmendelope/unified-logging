@@ -55,7 +55,6 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		MsgFilter:        request.GetMsgQueryFilter(),
 		From:             request.From,
 		To:               request.To,
-		K8sIdQueryFilter: m.convertK8Ids(request.K8SIdQueryFilter),
 	}
 
 	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)
@@ -78,12 +77,3 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 
 	return list, nil
 }
-
-func (m *Manager) convertK8Ids(labels map[string]*grpc_unified_logging_go.IdList) map[string][]string {
-	ids := make(map[string][]string, 0)
-	for key, value := range labels {
-		ids[key] = value.Ids
-	}
-	return ids
-}
-

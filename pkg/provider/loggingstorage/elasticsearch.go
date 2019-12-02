@@ -23,11 +23,8 @@ import (
 	"fmt"
 	"github.com/nalej/derrors"
 	"github.com/nalej/unified-logging/pkg/entities"
-	"time"
-
-	"github.com/rs/zerolog/log"
-
 	"github.com/olivere/elastic"
+	"github.com/rs/zerolog/log"
 )
 
 type ElasticSearch struct {
@@ -51,7 +48,7 @@ func (es *ElasticSearch) Connect() (*elastic.Client, derrors.Error) {
 
 func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error) {
 	log.Debug().Str("address", es.address).Msg("elastic search")
-	
+
 	client, derr := es.Connect()
 	if derr != nil {
 		return nil, derr
@@ -78,11 +75,12 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 
 	// Add time constraints
 	if request.From != 0 || request.To != 0 {
-		toTime := time.Now()
-		if request.To != 0 {
-			toTime = time.Unix(request.To, 0)
-		}
-		query = query.Must(createTimeQuery(time.Unix(request.From, 0), toTime))
+		//toTime := time.Now()
+		//if request.To != 0 {
+		//	toTime = time.Unix( request.To, 0)
+		//}
+		//query = query.Must(createTimeQuery(time.Unix(request.From, 0), time.Unix(request.To, 0)))
+		query = query.Must(createTimeQuery(request.From, request.To))
 	}
 
 	// Output query string for debugging
