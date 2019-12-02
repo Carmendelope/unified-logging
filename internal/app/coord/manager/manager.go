@@ -24,7 +24,6 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/grpc-connectivity-manager-go"
 	"github.com/nalej/unified-logging/pkg/entities"
-	"github.com/rs/zerolog/log"
 	"sort"
 	"time"
 
@@ -88,9 +87,7 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 // TODO: the slaves returns a ReponseList. The ccoordinator has to convert this into an array log entries, order all the messages by timestamp and group again by identifiers.
 // we should change the slaves so that they return an array of logs
 func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, derrors.Error) {
-
-	log.Debug().Interface("request", request).Msg("Search")
-
+	
 	// We have a verified request
 	fields := &entities.FilterFields{
 		OrganizationId:         request.GetOrganizationId(),
@@ -128,8 +125,6 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 }
 
 func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponseList, total int, request *grpc_unified_logging_go.SearchRequest) *grpc_unified_logging_go.LogResponseList {
-	log.Debug().Interface("request", request).Msg("mergeAllResponses")
-
 	// we need to get only the last limitPerSearch entry logs.
 	// 1) convert LogResponseList in []LogEntry
 	// 2) order by timestamp
