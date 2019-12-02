@@ -176,7 +176,7 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	var from, to int64
 	from = request.From
 	to = request.To
-	
+
 	if len(logEntries) > 0 {
 		from = logEntries[len(logEntries)-1].Timestamp.Unix()
 		to = logEntries[0].Timestamp.Unix()

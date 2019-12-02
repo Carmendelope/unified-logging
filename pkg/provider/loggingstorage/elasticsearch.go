@@ -75,11 +75,6 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 
 	// Add time constraints
 	if request.From != 0 || request.To != 0 {
-		//toTime := time.Now()
-		//if request.To != 0 {
-		//	toTime = time.Unix( request.To, 0)
-		//}
-		//query = query.Must(createTimeQuery(time.Unix(request.From, 0), time.Unix(request.To, 0)))
 		query = query.Must(createTimeQuery(request.From, request.To))
 	}
 
