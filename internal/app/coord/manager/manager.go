@@ -87,7 +87,7 @@ func (m *Manager) GetHosts(ctx context.Context, fields *entities.FilterFields) (
 // TODO: the slaves returns a ReponseList. The ccoordinator has to convert this into an array log entries, order all the messages by timestamp and group again by identifiers.
 // we should change the slaves so that they return an array of logs
 func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.SearchRequest) (*grpc_unified_logging_go.LogResponseList, derrors.Error) {
-	
+
 	// We have a verified request
 	fields := &entities.FilterFields{
 		OrganizationId:         request.GetOrganizationId(),
@@ -175,12 +175,8 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	// 4)
 	var from, to int64
 	from = request.From
-
-	//if request.To == 0 {
-	//	to = time.Now().Unix()
-	//}else{
 	to = request.To
-	//}
+	
 	if len(logEntries) > 0 {
 		from = logEntries[len(logEntries)-1].Timestamp.Unix()
 		to = logEntries[0].Timestamp.Unix()
