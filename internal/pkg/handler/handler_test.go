@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	From = 0
+	From = int64(0)
 	To   = time.Now().UnixNano()
 )
 
@@ -39,7 +39,7 @@ var ValidSearchRequest = &grpc_unified_logging_go.SearchRequest{
 	AppInstanceId:          AppInstanceId,
 	ServiceGroupInstanceId: ServiceGroupInstanceId,
 	MsgQueryFilter:         MsgQueryFilter,
-	From:                   0,
+	From:                   From,
 	To:                     To,
 }
 
