@@ -95,7 +95,7 @@ func MergeLogEntries(organizationID string, from int64, to int64, entries LogEnt
 		}
 		// add the message
 		responses[index].Entries = append(responses[index].Entries, &grpc_unified_logging_go.LogEntry{
-			Timestamp: entry.Timestamp.Unix(),
+			Timestamp: entry.Timestamp.UnixNano(),
 			Msg:       entry.Msg,
 		})
 

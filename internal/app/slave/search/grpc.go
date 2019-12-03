@@ -27,7 +27,7 @@ func GRPCEntries(entries entities.LogEntries) []*grpc.LogEntry {
 	result := make([]*grpc.LogEntry, len(entries))
 	for i, e := range entries {
 		result[i] = &grpc.LogEntry{
-			Timestamp: e.Timestamp.Unix(),
+			Timestamp: e.Timestamp.UnixNano(),
 			Msg:       e.Msg,
 		}
 	}

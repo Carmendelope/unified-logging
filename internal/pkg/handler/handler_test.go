@@ -30,8 +30,8 @@ const (
 )
 
 var (
-	From = time.Unix(0, 0)
-	To   = time.Now()
+	From = 0
+	To   = time.Now().UnixNano()
 )
 
 var ValidSearchRequest = &grpc_unified_logging_go.SearchRequest{
@@ -39,14 +39,15 @@ var ValidSearchRequest = &grpc_unified_logging_go.SearchRequest{
 	AppInstanceId:          AppInstanceId,
 	ServiceGroupInstanceId: ServiceGroupInstanceId,
 	MsgQueryFilter:         MsgQueryFilter,
-	From:                   From.Unix(),
-	To:                     To.Unix(),
+	From:                   0,
+	To:                     To,
 }
 
 var ValidExpirationRequest = &grpc_unified_logging_go.ExpirationRequest{
 	OrganizationId: OrganizationId,
 	AppInstanceId:  AppInstanceId,
 }
+
 /*
 var _ = ginkgo.Describe("Handler", func() {
 	// const numServices = 2

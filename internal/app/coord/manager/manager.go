@@ -149,7 +149,7 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 		for _, logResponse := range logResponseList.Responses {
 			for _, entry := range logResponse.Entries {
 				logEntries = append(logEntries, &entities.LogEntry{
-					Timestamp: time.Unix(entry.Timestamp, 0),
+					Timestamp: time.Unix(0, entry.Timestamp),
 					Msg:       entry.Msg,
 					Kubernetes: entities.KubernetesEntry{
 						Labels: entities.KubernetesLabelsEntry{
@@ -186,8 +186,8 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	to = request.To
 
 	if len(logEntries) > 0 {
-		from = logEntries[len(logEntries)-1].Timestamp.Unix()
-		to = logEntries[0].Timestamp.Unix()
+		from = logEntries[len(logEntries)-1].Timestamp.UnixNano()
+		to = logEntries[0].Timestamp.UnixNano()
 	}
 
 	list := entities.MergeLogEntries(request.OrganizationId, from, to, logEntries, errorIds)

@@ -85,12 +85,12 @@ var instances = map[string]map[string][]string{
 	},
 }
 
-var startTime = time.Unix(1550789643, 0).UTC()
+var startTime = 1550789643 * time.Second.Nanoseconds()
 
 const templateName = "integration_test"
 
 type ElasticITEntry struct {
-	Timestamp  time.Time                `json:"@timestamp"`
+	Timestamp  int64                    `json:"@timestamp"`
 	Stream     string                   `json:"stream"`
 	Message    string                   `json:"message"`
 	Kubernetes ElasticITEntryKubernetes `json:"kubernetes"`
@@ -216,7 +216,7 @@ func (es *ElasticSearchIT) generateEntries() [][]*ElasticITEntry {
 					}
 
 					entries = append(entries, entry)
-					t = t.Add(time.Second * 10)
+					t = t + time.Second.Nanoseconds()
 				}
 			}
 			entriesList = append(entriesList, entries)
