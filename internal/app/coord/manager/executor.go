@@ -44,7 +44,7 @@ func NewLoggingExecutor(factory client.LoggingClientFactory, params *client.Logg
 func (le *LoggingExecutor) ExecRequests(ctx context.Context, hosts []ClusterInfo, f ExecFunc) (int, []string, derrors.Error) {
 	// TODO: concurrent execution of request
 	var total int = 0
-	errorIds := make ([]string, 0)
+	errorIds := make([]string, 0)
 
 	for i, host := range hosts {
 		log.Debug().Str("host", host.host).Msg("executing on host")

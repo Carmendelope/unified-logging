@@ -54,9 +54,9 @@ type SearchRequest struct {
 	IsUnionFilter bool
 	// MsgFilter is a string that filters the log entries by message text. It allows wildcards.
 	MsgFilter string
-	// from is the beginning date in Unix time format.
+	// from is the beginning date in Unixnano time format.
 	From int64
-	// to is the ending date in Unix time format.
+	// to is the ending date in Unixnano time format.
 	To int64
 }
 

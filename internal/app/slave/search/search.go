@@ -50,11 +50,11 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 	}
 
 	search := &entities.SearchRequest{
-		Filters:          fields.ToFilters(),
-		IsUnionFilter:    true,
-		MsgFilter:        request.GetMsgQueryFilter(),
-		From:             request.From,
-		To:               request.To,
+		Filters:       fields.ToFilters(),
+		IsUnionFilter: true,
+		MsgFilter:     request.GetMsgQueryFilter(),
+		From:          request.From,
+		To:            request.To,
 	}
 
 	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)
@@ -67,8 +67,8 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 	from := request.From
 	to := request.To
 	if len(result) > 0 {
-		from = result[0].Timestamp.Unix()
-		to = result[len(result)-1].Timestamp.Unix()
+		from = result[0].Timestamp.UnixNano()
+		to = result[len(result)-1].Timestamp.UnixNano()
 
 	}
 
