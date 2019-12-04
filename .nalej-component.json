@@ -10,6 +10,10 @@
     "unified-logging-coord",
     "unified-logging-slave"
   ],
+  "component_list": [
+    "unified-logging-coord",
+    "unified-logging-slave"
+  ],
   "tools": [
     "docker",
     "k8s"
