@@ -23,6 +23,7 @@ import (
 	"github.com/nalej/derrors"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/rs/zerolog/log"
+	"time"
 
 	"github.com/olivere/elastic"
 )
@@ -65,10 +66,10 @@ func createFilterQuery(filters entities.SearchFilter) *elastic.BoolQuery {
 func createTimeQuery(from, to int64) elastic.Query {
 	query := elastic.NewRangeQuery(entities.TimestampField.String())
 	if from != 0 {
-		query = query.From(from)
+		query = query.From(time.Unix(0, from))
 	}
 	if to != 0 {
-		query = query.To(to)
+		query = query.To(time.Unix(0, to))
 	}
 
 	return query

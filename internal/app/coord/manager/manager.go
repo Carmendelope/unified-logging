@@ -191,7 +191,7 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	}
 
 	list := entities.MergeLogEntries(request.OrganizationId, from, to, logEntries, errorIds)
-	log.Debug().Interface("responses", list).Msg("merge response")
+	//log.Debug().Interface("responses", list).Msg("merge response")
 	return list
 
 }
