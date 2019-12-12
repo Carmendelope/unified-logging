@@ -38,4 +38,4 @@ const (
 	NALEJ_ANNOTATION_SERVICE_GROUP_NAME  = "nalej-service-group-name"
 )
 
-const LimitPerSearch = 10000
+const LimitPerSearch = 1000

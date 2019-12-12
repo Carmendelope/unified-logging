@@ -136,7 +136,7 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	// we need to get only the last limitPerSearch entry logs.
 	// 1) convert LogResponseList in []LogEntry
 	// 2) order by timestamp
-	// 3) get last limitPerSearch Log entries
+	// 3) get last or first limitPerSearch Log entries
 	// 4) and convert into LogResponseList again
 
 	// 1)
@@ -172,12 +172,16 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	}
 	// 2)
 	sort.SliceStable(logEntries, func(i, j int) bool {
-		return logEntries[i].Timestamp.After(logEntries[j].Timestamp)
+		return logEntries[i].Timestamp.Before(logEntries[j].Timestamp)
 	})
 
 	// 3)
 	if len(logEntries) > entities.LimitPerSearch {
-		logEntries = logEntries[0:entities.LimitPerSearch]
+		if request.NFirst {
+			logEntries = logEntries[0:entities.LimitPerSearch]
+		}else{
+			logEntries = logEntries[len(logEntries)-entities.LimitPerSearch-1:entities.LimitPerSearch]
+		}
 	}
 
 	// 4)
@@ -188,10 +192,15 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	if len(logEntries) > 0 {
 		from = logEntries[len(logEntries)-1].Timestamp.UnixNano()
 		to = logEntries[0].Timestamp.UnixNano()
+
+		if from > to {
+			aux := to
+			to = from
+			from = aux
+		}
 	}
 
 	list := entities.MergeLogEntries(request.OrganizationId, from, to, logEntries, errorIds)
-	//log.Debug().Interface("responses", list).Msg("merge response")
 	return list
 
 }
