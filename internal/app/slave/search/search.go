@@ -55,6 +55,7 @@ func (m *Manager) Search(ctx context.Context, request *grpc_unified_logging_go.S
 		MsgFilter:     request.GetMsgQueryFilter(),
 		From:          request.From,
 		To:            request.To,
+		NFirst:        request.NFirst,
 	}
 
 	result, err := m.Provider.Search(ctx, search, -1 /* No limit */)

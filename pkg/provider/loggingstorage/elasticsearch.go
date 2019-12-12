@@ -89,7 +89,7 @@ func (es *ElasticSearch) Search(ctx context.Context, request *entities.SearchReq
 
 	// Execute
 	searchResult, err := client.Search().Query(query).
-		Sort(entities.TimestampField.String(), false). // sorting descending
+		Sort(entities.TimestampField.String(), request.NFirst). // sorting descending
 		Size(limit).
 		Do(ctx)
 	if err != nil {
