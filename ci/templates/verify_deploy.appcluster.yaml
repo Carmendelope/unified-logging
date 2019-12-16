@@ -7,32 +7,6 @@ steps:
       isOk=1
       for (( i=0; i<36; i++ ))
       do
-        expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get deployment elastic -o=jsonpath='{.spec.replicas}')
-        if [ $? -ne 0 ]; then
-          exit 1
-        fi
-        ready=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get deployment elastic -o=jsonpath='{.status.readyReplicas}')
-        if [ $? -ne 0 ]; then
-          exit 1
-        fi
-        echo "Expected: $expected"
-        echo "Ready: $ready"
-        if [ "$expected" == "$ready" ]; then
-          isOk=0
-          break
-        else
-          echo "Not ready yet, waiting 10 seconds"
-          echo ""
-          sleep 10
-        fi
-      done
-      exit $isOk
-    displayName: Verify elastic deployment is ready
-    
-  - script: |
-      isOk=1
-      for (( i=0; i<36; i++ ))
-      do
         expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get deployment unified-logging-slave -o=jsonpath='{.spec.replicas}')
         if [ $? -ne 0 ]; then
           exit 1
@@ -59,11 +33,11 @@ steps:
       isOk=1
       for (( i=0; i<36; i++ ))
       do
-        expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get daemonset filebeat -o=jsonpath='{.spec.replicas}')
+        expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get deployment elastic -o=jsonpath='{.spec.replicas}')
         if [ $? -ne 0 ]; then
           exit 1
         fi
-        ready=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get daemonset filebea -o=jsonpath='{.status.readyReplicas}')
+        ready=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get deployment elastic -o=jsonpath='{.status.readyReplicas}')
         if [ $? -ne 0 ]; then
           exit 1
         fi
@@ -79,4 +53,4 @@ steps:
         fi
       done
       exit $isOk
-    displayName: Verify filebeat daemonset is ready
+    displayName: Verify elastic deployment is ready
