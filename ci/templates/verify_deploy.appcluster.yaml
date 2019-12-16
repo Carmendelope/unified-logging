@@ -59,11 +59,11 @@ steps:
       isOk=1
       for (( i=0; i<36; i++ ))
       do
-        expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get daemonset filebeat -o=jsonpath='{.spec.replicas}')
+        expected=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get daemonset filebeat -o=jsonpath='{.status.desiredNumberScheduled}')
         if [ $? -ne 0 ]; then
           exit 1
         fi
-        ready=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get daemonset filebeat -o=jsonpath='{.status.readyReplicas}')
+        ready=$(kubectl --kubeconfig ${{ parameters.kubeconfig }} -n ${{ parameters.namespace }} get daemonset filebeat -o=jsonpath='{.status.numberReady}')
         if [ $? -ne 0 ]; then
           exit 1
         fi
