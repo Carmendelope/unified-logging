@@ -139,12 +139,12 @@ stages:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)
 
-    - template: k8s/clusterrole/delete-clusterrole.yaml@ci_templates
+    - template: k8s/custom/delete-clusterrole.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
         component: "filebeat"
 
-    - template: k8s/clusterrole/delete-clusterrolebinding.yaml@ci_templates
+    - template: k8s/custom/delete-clusterrolebinding.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
         component: "filebeat"
