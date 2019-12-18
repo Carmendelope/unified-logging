@@ -134,11 +134,6 @@ stages:
         kubeconfig: $(kubeconfig)
         namespace: $(namespace)   
 
-    - template: k8s/ns/delete.yaml@ci_templates
-      parameters:
-        kubeconfig: $(kubeconfig)
-        namespace: $(namespace)
-
     - template: k8s/custom/delete-clusterrole.yaml@ci_templates
       parameters:
         kubeconfig: $(kubeconfig)
@@ -148,6 +143,11 @@ stages:
       parameters:
         kubeconfig: $(kubeconfig)
         component: "filebeat"
+
+    - template: k8s/ns/delete.yaml@ci_templates
+      parameters:
+        kubeconfig: $(kubeconfig)
+        namespace: $(namespace)
 
 # - stage: 'AssetPublish'
 #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
