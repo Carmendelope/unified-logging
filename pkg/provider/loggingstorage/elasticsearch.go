@@ -111,7 +111,11 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 	query := createFilterQuery(request.Filters)
 	query = query.MinimumShouldMatch("100%")
 
-	// TODO: Delete a specific time range
+	// Delete a specific time range (delete until to)
+	// Add time constraints
+	if request.To != 0 {
+		query = query.Must(createTimeQuery(0, request.To))
+	}
 
 	// Output query string for debugging
 	queryDebug(query)
@@ -129,6 +133,27 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 	_, err = elastic.NewIndicesFlushService(client).Do(ctx)
 	if err != nil {
 		return derrors.NewInternalError("elastic flush query failed", err)
+	}
+
+	return nil
+}
+
+func (es *ElasticSearch) RemoveIndex(ctx context.Context, index string) derrors.Error {
+
+	client, dErr := es.Connect()
+	if dErr != nil {
+		return dErr
+	}
+	exists, err := client.IndexExists(index).Do(ctx)
+	if err != nil {
+		return derrors.NewInternalError("elastic ask for an index query failed", err)
+	}
+	if exists {
+		_, err := client.DeleteIndex(index).Do(context.Background())
+		if err != nil {
+			return derrors.NewInternalError("elastic remove index failed", err)
+		}
+		log.Debug().Str("index", index).Msg("Removed")
 	}
 
 	return nil

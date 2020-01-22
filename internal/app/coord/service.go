@@ -85,6 +85,8 @@ func (s *Service) Run() derrors.Error {
 	clientManager := manager.NewManager(appsClient, clustersClient, executor, s.Configuration.AppClusterPrefix, s.Configuration.AppClusterPort)
 	handler := handler.NewHandler(clientManager, clientManager)
 
+	go clientManager.Clean()
+
 	// Create server and register handler
 	server := grpc.NewServer()
 	grpc_unified_logging_go.RegisterCoordinatorServer(server, handler)

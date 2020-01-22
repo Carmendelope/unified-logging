@@ -29,4 +29,5 @@ import (
 type Provider interface {
 	Search(ctx context.Context, request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error)
 	Expire(ctx context.Context, request *entities.SearchRequest) derrors.Error
+	RemoveIndex(ctx context.Context, index string) derrors.Error
 }

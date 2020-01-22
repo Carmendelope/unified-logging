@@ -26,6 +26,7 @@ import (
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/rs/zerolog/log"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/nalej/grpc-app-cluster-api-go"
@@ -33,14 +34,17 @@ import (
 	"github.com/nalej/grpc-common-go"
 	"github.com/nalej/grpc-infrastructure-go"
 	"github.com/nalej/grpc-organization-go"
+	"github.com/nalej/grpc-organization-manager-go"
 	"github.com/nalej/grpc-unified-logging-go"
 )
+
+const defaultLogExpiration = 7
 
 type Manager struct {
 	ApplicationsClient grpc_application_go.ApplicationsClient
 	ClustersClient     grpc_infrastructure_go.ClustersClient
-
-	Executor *LoggingExecutor
+	OrgClient          grpc_organization_manager_go.OrganizationsClient
+	Executor           *LoggingExecutor
 
 	appClusterPrefix string
 	appClusterPort   int
@@ -179,8 +183,8 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	if len(logEntries) > entities.LimitPerSearch {
 		if request.NFirst {
 			logEntries = logEntries[0:entities.LimitPerSearch]
-		}else{
-			logEntries = logEntries[len(logEntries)-entities.LimitPerSearch-1:entities.LimitPerSearch]
+		} else {
+			logEntries = logEntries[len(logEntries)-entities.LimitPerSearch-1 : entities.LimitPerSearch]
 		}
 	}
 
@@ -230,4 +234,43 @@ func (m *Manager) Expire(ctx context.Context, request *grpc_unified_logging_go.E
 	log.Debug().Interface("errors", errorIds).Msg("errors in search")
 
 	return &grpc_common_go.Success{}, nil
+}
+
+// TODO:
+func (m *Manager) Clean() {
+	log.Debug().Msg("Clean thread started")
+
+	orgList, err := m.OrgClient.ListOrganizations(context.Background(), &grpc_common_go.Empty{})
+	if err != nil {
+		log.Err(err).Msg("error listing organizations")
+		return
+	}
+	for _, org := range orgList.Organizations {
+		expDays := defaultLogExpiration
+		value, err := m.OrgClient.GetSetting(context.Background(), &grpc_organization_go.SettingKey{
+			OrganizationId: org.OrganizationId,
+			Key: "LOG_EXPIRATION_TIME", // TODO: Add in grpc_organization_go.AllowedKey
+		})
+		if err != nil {
+			log.Debug().Str("organizationID", org.OrganizationId).Msg("LOG_EXPIRATION_TIME setting not found")
+		}else{
+			convertedValue, err := strconv.Atoi(value.Value)
+			if err != nil {
+				log.Debug().Str("organizationID", org.OrganizationId).Str("value", value.Value).
+					Msg("error converting LOG_EXPIRATION_TIME to int")
+			}else{
+				expDays = convertedValue
+			}
+		}
+
+		// expire
+		m.Expire(context.Background(), &grpc_unified_logging_go.ExpirationRequest{
+
+		})
+
+	}
+
+	// preguntar por los settings de las organizaciones (para cada organizacion)
+	// llamar a Expired con to y organizationID
+
 }
