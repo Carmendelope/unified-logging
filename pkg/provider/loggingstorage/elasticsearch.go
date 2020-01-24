@@ -154,7 +154,28 @@ func (es *ElasticSearch) RemoveIndex(ctx context.Context, index string) derrors.
 			return derrors.NewInternalError("elastic remove index failed", err)
 		}
 		log.Debug().Str("index", index).Msg("Removed")
+	}else{
+		log.Debug().Str("index", index).Msg("Index not exists")
 	}
 
 	return nil
+}
+
+
+func (es *ElasticSearch) GetIndexList(ctx context.Context) ([]string, derrors.Error) {
+
+	client, dErr := es.Connect()
+	if dErr != nil {
+		return nil, dErr
+	}
+
+	list, err := client.CatIndices().Do(ctx)
+	if err != nil {
+		return nil, derrors.NewInternalError("error listing index")
+	}
+	indexList := make ([]string, 0)
+	for _, index := range list{
+		indexList = append(indexList, index.Index)
+	}
+	return indexList, nil
 }
