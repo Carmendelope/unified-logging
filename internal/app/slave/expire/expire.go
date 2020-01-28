@@ -22,7 +22,7 @@ import (
 	"context"
 	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/rs/zerolog/log"
-	"strings"
+	"regexp"
 	"time"
 
 	"github.com/nalej/derrors"
@@ -35,13 +35,14 @@ import (
 )
 
 // expire logs timer
+//const LoopSleep = time.Minute * 60 * 24
+const LoopSleep = time.Minute
 
-const LoopSleep = time.Minute * 60 * 24
+// DefaultLogEntryTTL number of days the logs will be alive in the system, then they will be deleted
+const DefaultLogEntryTTL = 7
 
-const defaultDaysExpired = 7
-
-// TODO: the index name is associated to filebeat version. It must be taken into account when changing the session
-const indexPrefix = "filebeat-6.6.0-"
+// indexPattern is a regular expression to find the date in the index name "YYYY.MM.DD"
+const indexPattern = "\\d{4}.\\d{2}.\\d{2}$"
 
 type Manager struct {
 	Provider loggingstorage.Provider
@@ -75,14 +76,20 @@ func (m *Manager) Expire(ctx context.Context, request *grpc.ExpirationRequest) (
 
 // check if the index must be deleted
 func (m *Manager) checkRemoveIndex(index string) (bool, derrors.Error) {
-	// index example "filebeat-6.6.0-2020.01.17"
-	indexDate := strings.Replace(index, indexPrefix, "", -1)
 
+	// the index name is like "filebeat-6.6.0-2020.01.17", we need to find the date of the end
+	re := regexp.MustCompile(indexPattern)
+	ind := re.FindStringSubmatch(index)
+	if len(ind) <= 0 {
+		return false, derrors.NewInternalError("error parsing the index").WithParams(index)
+	}
+
+	indexDate := ind[0]
 	date, err := time.Parse("2006.01.02", indexDate)
 	if err != nil {
 		return false, derrors.NewInternalError("error checking the index")
 	}
-	limitDate := time.Now().AddDate(0, 0, -1*(defaultDaysExpired+1)) // I need to sum one day because I am comparing now with time and the index date without it
+	limitDate := time.Now().AddDate(0, 0, -1*(DefaultLogEntryTTL+1)) // I need to sum one day because I am comparing now with time and the index date without it
 	if limitDate.After(date) {
 		return true, nil
 	}
