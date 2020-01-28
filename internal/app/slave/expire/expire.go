@@ -35,8 +35,7 @@ import (
 
 // expire logs timer
 
-// TODO: cambiar a 24 horas
-const LoopSleep = time.Minute * 24
+const LoopSleep = time.Minute * 60 * 24
 
 const defaultDaysExpired = 7
 const indexPrefix = "filebeat-6.6.0-"
