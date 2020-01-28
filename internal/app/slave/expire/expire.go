@@ -106,21 +106,20 @@ func (m *Manager) deleteIndex() {
 		log.Warn().Str("err", err.DebugReport()).Msg("error cleaning index")
 		return
 	}
-	log.Debug().Interface("indexList", indexList).Msg("listing the indexes")
 
 	for _, index := range indexList {
 		remove, err := m.checkRemoveIndex(index)
 		if err != nil {
-			log.Debug().Str("index", index).Msg("error checking the index")
+			log.Warn().Str("index", index).Msg("error checking the index")
 		} else {
 			log.Debug().Str("index", index).Bool("remove", remove).Msg("checking the index")
 			if remove {
 				ctx, cancel := utils.GetContext()
+				defer cancel()
 				err = m.Provider.RemoveIndex(ctx, index)
 				if err != nil {
 					log.Warn().Str("index", index).Str("err", err.DebugReport()).Msg("error cleaning index")
 				}
-				cancel()
 			}
 		}
 
