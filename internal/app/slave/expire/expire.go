@@ -35,8 +35,7 @@ import (
 )
 
 // expire logs timer
-//const LoopSleep = time.Minute * 60 * 24
-const LoopSleep = time.Minute
+const LoopSleep = time.Minute * 60 * 24
 
 // DefaultLogEntryTTL number of days the logs will be alive in the system, then they will be deleted
 const DefaultLogEntryTTL = 7
