@@ -33,14 +33,17 @@ import (
 	"github.com/nalej/grpc-common-go"
 	"github.com/nalej/grpc-infrastructure-go"
 	"github.com/nalej/grpc-organization-go"
+	"github.com/nalej/grpc-organization-manager-go"
 	"github.com/nalej/grpc-unified-logging-go"
 )
+
+const defaultLogExpiration = 7
 
 type Manager struct {
 	ApplicationsClient grpc_application_go.ApplicationsClient
 	ClustersClient     grpc_infrastructure_go.ClustersClient
-
-	Executor *LoggingExecutor
+	OrgClient          grpc_organization_manager_go.OrganizationsClient
+	Executor           *LoggingExecutor
 
 	appClusterPrefix string
 	appClusterPort   int
@@ -179,8 +182,8 @@ func (m *Manager) mergeAllResponses(lists []*grpc_unified_logging_go.LogResponse
 	if len(logEntries) > entities.LimitPerSearch {
 		if request.NFirst {
 			logEntries = logEntries[0:entities.LimitPerSearch]
-		}else{
-			logEntries = logEntries[len(logEntries)-entities.LimitPerSearch-1:entities.LimitPerSearch]
+		} else {
+			logEntries = logEntries[len(logEntries)-entities.LimitPerSearch-1 : entities.LimitPerSearch]
 		}
 	}
 

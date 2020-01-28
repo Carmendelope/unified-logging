@@ -38,6 +38,7 @@ func init() {
 	runCmd.Flags().IntVar(&config.Port, "port", 8322, "Port for Unified Logging Slave gRPC API")
 	runCmd.PersistentFlags().StringVar(&config.ElasticAddress, "elasticAddress", "localhost:9200",
 		"ElasticSearch address (host:port)")
+	runCmd.Flags().BoolVar(&config.ExpireLogs, "expireLogs", true, "Flag to indicate if logs have to expire")
 	rootCmd.AddCommand(runCmd)
 }
 

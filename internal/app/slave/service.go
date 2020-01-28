@@ -70,6 +70,10 @@ func (s *Service) Run() derrors.Error {
 	expireManager := expire.NewManager(elasticProvider)
 	handler := handler.NewHandler(searchManager, expireManager)
 
+	if s.Configuration.ExpireLogs {
+		go expireManager.DeleteIndexLoop()
+	}
+
 	// Create server and register handler
 	server := grpc.NewServer()
 	grpc_unified_logging_go.RegisterSlaveServer(server, handler)

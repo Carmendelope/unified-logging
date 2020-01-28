@@ -22,6 +22,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/nalej/derrors"
+	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/olivere/elastic"
 	"github.com/rs/zerolog/log"
@@ -111,7 +112,11 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 	query := createFilterQuery(request.Filters)
 	query = query.MinimumShouldMatch("100%")
 
-	// TODO: Delete a specific time range
+	// Delete a specific time range (delete until to)
+	// Add time constraints
+	if request.To != 0 {
+		query = query.Must(createTimeQuery(0, request.To))
+	}
 
 	// Output query string for debugging
 	queryDebug(query)
@@ -132,4 +137,47 @@ func (es *ElasticSearch) Expire(ctx context.Context, request *entities.SearchReq
 	}
 
 	return nil
+}
+
+func (es *ElasticSearch) RemoveIndex(ctx context.Context, index string) derrors.Error {
+
+	client, dErr := es.Connect()
+	if dErr != nil {
+		return dErr
+	}
+	exists, err := client.IndexExists(index).Do(ctx)
+	if err != nil {
+		return derrors.NewInternalError("elastic ask for an index query failed", err)
+	}
+	if exists {
+		delCtx, cancel := utils.GetContext()
+		defer cancel()
+		_, err := client.DeleteIndex(index).Do(delCtx)
+		if err != nil {
+			return derrors.NewInternalError("elastic remove index failed", err)
+		}
+		log.Debug().Str("index", index).Msg("Removed")
+	} else {
+		log.Debug().Str("index", index).Msg("Index not exists")
+	}
+
+	return nil
+}
+
+func (es *ElasticSearch) GetIndexList(ctx context.Context) ([]string, derrors.Error) {
+
+	client, dErr := es.Connect()
+	if dErr != nil {
+		return nil, dErr
+	}
+
+	list, err := client.CatIndices().Do(ctx)
+	if err != nil {
+		return nil, derrors.NewInternalError("error listing index")
+	}
+	indexList := make([]string, 0)
+	for _, index := range list {
+		indexList = append(indexList, index.Index)
+	}
+	return indexList, nil
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Nalej
+ * Copyright 2020 Nalej
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-// Logging storage provider interface
-
-package loggingstorage
+package utils
 
 import (
 	"context"
-
-	"github.com/nalej/derrors"
-	"github.com/nalej/unified-logging/pkg/entities"
+	"time"
 )
 
-// Provider is the interface of the Logging provider.
-type Provider interface {
-	Search(ctx context.Context, request *entities.SearchRequest, limit int) (entities.LogEntries, derrors.Error)
-	Expire(ctx context.Context, request *entities.SearchRequest) derrors.Error
-	RemoveIndex(ctx context.Context, index string) derrors.Error
-	GetIndexList(ctx context.Context) ([]string, derrors.Error)
+const (
+	DefaultTimeout = time.Minute
+)
+
+// GetContext returns a context with a default timeout for internal communications.
+func GetContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), DefaultTimeout)
 }

@@ -29,6 +29,8 @@ type Config struct {
 	Port int
 	// Address with host:port of the ElasticSearch server
 	ElasticAddress string
+	// ExpireLogs flag to indicate if logs have to expire
+	ExpireLogs bool
 }
 
 // Validate the configuration.
@@ -46,4 +48,5 @@ func (conf *Config) Validate() derrors.Error {
 func (conf *Config) Print() {
 	log.Info().Int("port", conf.Port).Msg("gRPC port")
 	log.Info().Str("URL", conf.ElasticAddress).Msg("ElasticSearch")
+	log.Info().Bool("ExpireLogs", conf.ExpireLogs).Msg("ExpireLogs")
 }

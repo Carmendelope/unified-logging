@@ -60,7 +60,6 @@ type SearchRequest struct {
 	To int64
 	// NFirst flag to indicate the order
 	NFirst bool
-
 }
 
 // IsValid check if the search request is well-formed.

@@ -30,6 +30,7 @@ spec:
         args:
         - "run"
         - "--elasticAddress=elastic.__NPH_NAMESPACE:9200"
+        - "--expireLogs=true"
         ports:
         - name: api-port
           containerPort: 8322
