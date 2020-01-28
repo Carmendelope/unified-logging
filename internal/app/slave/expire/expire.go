@@ -38,6 +38,8 @@ import (
 const LoopSleep = time.Minute * 60 * 24
 
 const defaultDaysExpired = 7
+
+// TODO: the index name is associated to filebeat version. It must be taken into account when changing the session
 const indexPrefix = "filebeat-6.6.0-"
 
 type Manager struct {
@@ -79,13 +81,14 @@ func (m *Manager) checkRemoveIndex(index string) (bool, derrors.Error) {
 	if err != nil {
 		return false, derrors.NewInternalError("error checking the index")
 	}
-	limitDate := time.Now().AddDate(0,0,-1 * (defaultDaysExpired +1)) // I need to sum one day because I am comparing now with time and the index date without it
+	limitDate := time.Now().AddDate(0, 0, -1*(defaultDaysExpired+1)) // I need to sum one day because I am comparing now with time and the index date without it
 	if limitDate.After(date) {
 		return true, nil
 	}
 	return false, nil
 }
 
+// deleteIndex gets all the indexes and removes the old ones
 func (m *Manager) deleteIndex() {
 	log.Debug().Msg("Delete Index")
 
@@ -102,7 +105,7 @@ func (m *Manager) deleteIndex() {
 			log.Debug().Str("index", index).Msg("error checking the index")
 		} else {
 			log.Debug().Str("index", index).Bool("remove", remove).Msg("checking the index")
-			if remove{
+			if remove {
 				err = m.Provider.RemoveIndex(context.Background(), index)
 				if err != nil {
 					log.Warn().Str("index", index).Str("err", err.DebugReport()).Msg("error cleaning index")
@@ -113,6 +116,7 @@ func (m *Manager) deleteIndex() {
 	}
 }
 
+// DeleteIndexLoop Loop to remove old indexes
 func (m *Manager) DeleteIndexLoop() {
 	log.Debug().Msg("Delete Index Loop Begins")
 	ticker := time.NewTicker(LoopSleep)
