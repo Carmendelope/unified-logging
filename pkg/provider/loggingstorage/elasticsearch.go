@@ -22,6 +22,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/nalej/derrors"
+	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/nalej/unified-logging/pkg/entities"
 	"github.com/olivere/elastic"
 	"github.com/rs/zerolog/log"
@@ -149,7 +150,9 @@ func (es *ElasticSearch) RemoveIndex(ctx context.Context, index string) derrors.
 		return derrors.NewInternalError("elastic ask for an index query failed", err)
 	}
 	if exists {
-		_, err := client.DeleteIndex(index).Do(context.Background())
+		delCtx, cancel := utils.GetContext()
+		defer cancel()
+		_, err := client.DeleteIndex(index).Do(delCtx)
 		if err != nil {
 			return derrors.NewInternalError("elastic remove index failed", err)
 		}

@@ -20,6 +20,7 @@ package expire
 
 import (
 	"context"
+	"github.com/nalej/unified-logging/internal/pkg/utils"
 	"github.com/rs/zerolog/log"
 	"strings"
 	"time"
@@ -92,7 +93,9 @@ func (m *Manager) checkRemoveIndex(index string) (bool, derrors.Error) {
 func (m *Manager) deleteIndex() {
 	log.Debug().Msg("Delete Index")
 
-	indexList, err := m.Provider.GetIndexList(context.Background())
+	listCtx, listCancel := utils.GetContext()
+	defer listCancel()
+	indexList, err := m.Provider.GetIndexList(listCtx)
 	if err != nil {
 		log.Warn().Str("err", err.DebugReport()).Msg("error cleaning index")
 		return
@@ -106,10 +109,12 @@ func (m *Manager) deleteIndex() {
 		} else {
 			log.Debug().Str("index", index).Bool("remove", remove).Msg("checking the index")
 			if remove {
-				err = m.Provider.RemoveIndex(context.Background(), index)
+				ctx, cancel := utils.GetContext()
+				err = m.Provider.RemoveIndex(ctx, index)
 				if err != nil {
 					log.Warn().Str("index", index).Str("err", err.DebugReport()).Msg("error cleaning index")
 				}
+				cancel()
 			}
 		}
 
