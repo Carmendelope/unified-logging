@@ -1,6 +1,6 @@
 # Unified logging
 
-`unified-logging` implements a distributed system to collect logs from user applications running on the Nalej platform. It uses standard components for log ingestion, storage and querying, adds an aggregation layer and leverages the existing platform constructs for the distributed nature.
+`unified-logging` implements a distributed system to collect logs from user applications running on the Nalej platform. It uses standard components for log ingestion, storage and querying, adds an aggregation layer, and leverages the existing platform constructs for the distributed nature.
 
 
 ## Getting Started
@@ -9,11 +9,13 @@
 
 Kubernetes, and therefore the Nalej platform, uses the standard Docker mechanism to collect logs from applications: everything a container writes to `stdout` or `stderr` gets captured in a file on the node where that container runs. The Unified Logging solution deploys a filebeat instance on each node to scrape those logs, filter them and store them in a cluster-local ElasticSearch instance.
 
-First of all, filebeat annotates each log line with Kubernetes information. Then, it discards any log line that does not originate from a container with the label `nalej-organization` set - in other words, it only deals with user applications. Next, it discards lines originating from `zt-sidecar` containers, as though they are deployed in a user namespace, they are not part of the user logging infromation. Lastly, it drops almost all annotations for a log line except for the Kubernetes namespace and labels, to save space.
+First of all, filebeat annotates each log line with Kubernetes information. Then, it discards any log line that does not originate from a container with the label `nalej-organization` set - in other words, it only deals with user applications. Next, it discards lines originating from `zt-sidecar` containers, because although they are deployed in a user namespace, they are not part of the user logging infromation. Lastly, it drops almost all annotations for a log line except for the Kubernetes namespace and labels, to save space.
 
 Currently the standard filebeat/ElasticSearch indexing is used - this should be changed to an index per namespace, as this will be much more efficient; this is what we will query on (as this is per application/fragment).
 
-An application cluster-local component, `unified-logging-slave`, implements `Search` and `Expire` endpoints to retrieve cluster-local logs. Search implements filters for application instance and service group instance as well as free text search and an optional time range. Expire will delete all logs for a specific application instance.
+An application cluster-local component, `unified-logging-slave`, implements `Search` and `Expire` endpoints to retrieve cluster-local logs. 
+* `Search` implements filters for application instance and service group instance as well as free text search and an optional time range. 
+* `Expire` will delete all logs for a specific application instance.
 
 The logging slave will return at most 10,000 log lines (this is a default ElasticSearch limitation). To retrieve more logs, we should implement the use of the Elastic scroll or pagination APIs.
 
@@ -25,17 +27,17 @@ The end-to-end mechanism follows our standard architecture of Public API -> Coor
 
 As per above:
 
-- Optimization of cluster-local queries by reorganizing the storage indexing
+- Optimization of cluster-local queries by reorganizing the storage indexing.
 - Optimization of retrieval by only querying relevant clusters and parallel querying.
-- Pagination or scroll API use
-- Expiration for time range instead of all logs for an instance
+- Pagination or scroll API use.
+- Expiration for time range instead of all logs for an instance.
 - Potentially storing certain log lines (by filter? with errors or warnings?) on the management cluster for longer term storage / disaster recovery and analysis.
 
 ### Prerequisites
 
 #### Slave
 
-`unified-logging-slave` depends on ElasticSearch running locally, without any security mechanism. Furthermore, it expects filebeat to ingest the logs in ElasticSearch. To this end, we have deployments for both as part of the unified logging package.
+`unified-logging-slave` depends on ElasticSearch running locally, without any security mechanism. Furthermore, it expects filebeat to ingest the logs in ElasticSearch. As of now, we have deployments for both as part of the unified logging package.
 
 ```
 $ ./unified-logging-slave run --help
@@ -86,8 +88,7 @@ In order to build and compile this repository use the provided Makefile:
 make all
 ```
 
-This operation generates the binaries for this repo, download dependencies,
-run existing tests and generate ready-to-deploy Kubernetes files.
+This operation generates the binaries for this repo, downloads the required dependencies, runs existing tests and generates ready-to-deploy Kubernetes files.
 
 ### Run tests
 
@@ -99,7 +100,7 @@ make test
 
 ### Integration tests
 
-The following table contains the variables that activate the integration tests
+The following table contains the variables that activate the integration tests.
 
  | Variable  | Example Value | Description |
  | ------------- | ------------- |------------- |
@@ -128,8 +129,8 @@ dep ensure -update -v
 ### API
 
 All endpoints implement:
-- `Search` with a `SearchRequest` as argument and a `LogResponse` as response, and
-- `Expire` with an `ExpirationRequest` as argument and a `common.Success` (true or false) as response.
+- `Search`, with a `SearchRequest` as argument and a `LogResponse` as response, and
+- `Expire`, with an `ExpirationRequest` as argument and a `common.Success` (true or false) as response.
 
 Common for both requests are an organization ID and an application instance ID. On top, a `SearchRequest` also has fields for a service group ID, a log message free text filter string, a time range and a sort order.
 
@@ -174,7 +175,7 @@ Please read [contributing.md](contributing.md) for details on our code of conduc
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/nalej/unified-logging/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the available versions, see the [tags on this repository](https://github.com/nalej/unified-logging/tags). 
 
 ## Authors
 
@@ -182,13 +183,3 @@ See also the list of [contributors](https://github.com/nalej/unified-logging/con
 
 ## License
 This project is licensed under the Apache 2.0 License - see the [LICENSE-2.0.txt](LICENSE-2.0.txt) file for details.
-
-
-
-
-
-## Usage
-
-
-
-
