@@ -11,27 +11,15 @@ Kubernetes, and therefore the Nalej platform, uses the standard Docker mechanism
 
 First of all, filebeat annotates each log line with Kubernetes information. Then, it discards any log line that does not originate from a container with the label `nalej-organization` set - in other words, it only deals with user applications. Next, it discards lines originating from `zt-sidecar` containers, because although they are deployed in a user namespace, they are not part of the user logging infromation. Lastly, it drops almost all annotations for a log line except for the Kubernetes namespace and labels, to save space.
 
-Currently the standard filebeat/ElasticSearch indexing is used - this should be changed to an index per namespace, as this will be much more efficient; this is what we will query on (as this is per application/fragment).
-
 An application cluster-local component, `unified-logging-slave`, implements `Search` and `Expire` endpoints to retrieve cluster-local logs. 
-* `Search` implements filters for application instance and service group instance as well as free text search and an optional time range. 
+* `Search` implements filters for application instance ID, service instance ID, service ID, service group instance ID, service group ID, and application descriptor ID, as well as free text search (which includes not only the logs but also the name of the components) and a time range. 
 * `Expire` will delete all logs for a specific application instance.
 
-The logging slave will return at most 10,000 log lines (this is a default ElasticSearch limitation). To retrieve more logs, we should implement the use of the Elastic scroll or pagination APIs.
+The logging slave will return at most 10,000 log lines (this is a default ElasticSearch limitation). To retrieve older logs we can filter by time range. 
 
-On the management cluster, the `unified-logging-coord` implements the same `Search` and `Expire` endpoints, except that it executes them on the relevant application clusters (currently, just on all available). When all logs are retrieved, the coordinator merges and sorts them before returning.
+On the management cluster, the `unified-logging-coord` implements the same `Search` and `Expire` endpoints, except that it executes them on all the application clusters available. When all logs are retrieved, the coordinator merges and sorts them before returning.
 
 The end-to-end mechanism follows our standard architecture of Public API -> Coordinator -> Application cluster API -> Slave.
-
-## To do
-
-As per above:
-
-- Optimization of cluster-local queries by reorganizing the storage indexing.
-- Optimization of retrieval by only querying relevant clusters and parallel querying.
-- Pagination or scroll API use.
-- Expiration for time range instead of all logs for an instance.
-- Potentially storing certain log lines (by filter? with errors or warnings?) on the management cluster for longer term storage / disaster recovery and analysis.
 
 ### Prerequisites
 
@@ -140,7 +128,7 @@ See [unified-logging](https://github.com/nalej/grpc-protos/tree/master/unified-l
 
 ### CLI
 
-The public API CLI only implements the search request, as follows:
+The public API CLI implements the search request, as follows:
 
 ```
 $ ./public-api-cli log search --help
@@ -167,6 +155,35 @@ Global Flags:
       --nalejAddress string       Address (host) of the Nalej platform
       --organizationID string     Organization identifier
 ```
+
+It also implements the `download` command, which allows the user to download a batch of logs (resulting from a specific search).
+
+```
+Download application logs based on application and service group instance
+
+Usage:
+  public-api-cli log download [flags]
+  public-api-cli log download [command]
+
+Available Commands:
+  check       Check the status of a download request
+  get         Get results file
+  list        List the status of all download requests
+  search      Search and download log entries
+
+Flags:
+  -h, --help   help for download
+
+Global Flags:
+      --cacert string           Path of the CA certificate to validate the server connection
+      --consoleLogging          Pretty print logging
+      --debug                   Set debug level
+      --insecure                Skip CA validation when connecting to a secure TLS server
+      --nalejAddress string     Address (host) of the Nalej platform
+      --organizationID string   Organization identifier
+      --useTLS                  Connect to a TLS server (default true)
+```
+
 
 ## Contributing
 
